@@ -1,0 +1,28 @@
+
+Dump of file D:\LINE-FAKE\release\DeskTiles\DeskTiles.exe
+
+File Type: EXECUTABLE IMAGE
+
+  Image has the following dependencies:
+
+    USER32.dll
+    GDI32.dll
+    gdiplus.dll
+    SHELL32.dll
+    COMDLG32.dll
+    bcrypt.dll
+    SHLWAPI.dll
+    MSIMG32.dll
+    dwmapi.dll
+    RstrtMgr.DLL
+    KERNEL32.dll
+
+  Summary
+
+        5000 .data
+        6000 .pdata
+       28000 .rdata
+        1000 .reloc
+       5B000 .rsrc
+       9C000 .text
+        1000 _RDATA

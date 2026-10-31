@@ -1,0 +1,11 @@
+DeskTiles relocation — 2026-10-31 Asia/Taipei
+Source: D:\LINE-FAKE
+Destination: D:\DeskTile
+Verified SHA256 files: 41
+Pending files: 0
+Existing target .git and .gitattributes preserved.
+User LocalAppData data directory was not moved or deleted.
+Relocated package SHA256 checks passed.
+PowerShell scripts parse successfully at new location.
+No files remain at source; a running application holds an empty source directory.
+README and portfolio handoff paths updated.

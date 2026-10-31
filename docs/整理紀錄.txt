@@ -1,0 +1,56 @@
+DeskTiles cleanup — 2026-10-31 Asia/Taipei
+Scope: workspace build outputs and explicitly listed obsolete documentation artifacts only.
+Preserved: source, latest developer EXE, release package, current docs/screenshots, logo source, third-party license.
+User data under LocalAppData was not deleted or included in the release package.
+REMOVED build\activation-20261031-152804-167
+REMOVED build\activation-20261031-153019-343
+REMOVED build\activation-20261031-153032-381
+REMOVED build\activation-20261031-153350-761
+REMOVED build\activation-20261031-153408-778
+REMOVED build\package-staging-20261031-153819-412
+REMOVED build\package-test-20261031-153933-661
+REMOVED build\test-20261029-003138-113
+REMOVED build\test-20261029-003206-482
+REMOVED build\test-desktop-final
+REMOVED build\test-desktop-host
+REMOVED build\test-desktop-verified
+REMOVED build\verify-20261029-004007-912
+REMOVED build\verify-20261029-005611-028
+REMOVED build\verify-20261029-005820-249
+REMOVED build\verify-20261029-012139-900
+REMOVED build\verify-20261029-012455-714
+REMOVED build\verify-20261029-122748-964
+REMOVED build\verify-20261029-184345-783
+REMOVED build\verify-20261029-184753-338
+REMOVED build\verify-20261031-143435-202
+REMOVED build\verify-20261031-143715-221
+REMOVED build\verify-20261031-145631-182
+REMOVED build\verify-20261031-154026-825
+REMOVED build\HexDesk.exe
+REMOVED build\HexDesk-update.exe
+REMOVED build\HexDesk-next.exe
+REMOVED build\DeskTiles.exe
+REMOVED build\HexDesk.obj
+REMOVED build\DeskTiles.obj
+REMOVED build\CoreTests.exe
+REMOVED build\CoreTests.obj
+REMOVED build\DeskTiles.res
+REMOVED build\compiler-environment.cmd
+REMOVED build\core-test-results.txt
+REMOVED docs\appearance-control.png
+REMOVED docs\background-breathing.png
+REMOVED docs\background-control.png
+REMOVED docs\border-styles.png
+REMOVED docs\breathing-control.png
+REMOVED docs\DeskTiles-control.png
+REMOVED docs\DeskTiles-exe-icon.png
+REMOVED docs\DeskTiles-large-font-background.png
+REMOVED docs\DeskTiles-large-font-border.png
+REMOVED docs\DeskTiles-large-font-control.png
+REMOVED docs\DeskTiles-large-font-typography.png
+REMOVED docs\DeskTiles-shapes.png
+REMOVED docs\example-config.json
+REMOVED docs\size-text-control.png
+REMOVED docs\size-text.png
+Removed targets=50; freed bytes=31746139; skipped=0
+Existing DeskTile/.git repository directory was preserved unchanged.

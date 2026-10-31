@@ -1,0 +1,29 @@
+DeskTiles latest validation — 2026-10-31 Asia/Taipei
+Core: 170 checks passed.
+Packaged EXE: 123 Windows integration checks passed after extracting ZIP.
+Duplicate launch: hidden controller restored; existing process stays alive; layout SHA256 unchanged.
+Legacy DeskTiles duplicate launch: hidden controller restored; layout SHA256 unchanged.
+Original startup cause: an old background DeskTiles process held the data directory lock.
+Fix: query exact lock owner and restore controller; permission failures have a separate path/error-code message.
+Windows x64 PE confirmed. Dependencies are Windows DLLs; no dynamic VC runtime, .NET, Python or browser runtime.
+Package includes EXE, README.txt, user guide, example JSON and third-party MIT notice.
+Package resource sample (three tiles, short local sample):
+PASS checks=123
+idle_sample_seconds=5
+idle_cpu_one_core_percent=0
+working_set_mib=30.4805
+private_mib=7.84766
+handles=245
+gdi_objects=64
+idle_tile_paints=0
+rgb_sample_seconds=10
+rgb_cpu_one_core_percent=0.3125
+rgb_timer_frames=107
+rgb_tile_paints=214
+SHA256 checksums:
+Standard verification: 123 Windows checks passed.
+Additional protection: Unicode paths, corrupt file SHA256 preserved, exclusive data lock rejection all passed.
+77B336514C7A961ABE52DCD579EC4E20AD41E0FD8B6B4099DEAF1AB6B789E8A8  DeskTiles-Windows-x64.zip
+4F7074CE24AA65A186989299E35FD92B2CC7260FFEAAC9AB10358E04F422A17C  DeskTiles/DeskTiles.exe
+Final ZIP rebuilt from current documentation/example; embedded EXE hash matches the fully tested binary.
+Published release EXE launched successfully using the existing user data directory; initialization completed.
