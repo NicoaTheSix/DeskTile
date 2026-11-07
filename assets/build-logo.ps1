@@ -1,67 +1,96 @@
-$ErrorActionPreference = 'Stop'
-$gridPath = Join-Path $PSScriptRoot 'logo-grid.txt'
-$icoPath = Join-Path $PSScriptRoot 'DeskTiles.ico'
+﻿$ErrorActionPreference = 'Stop'
 $svgPath = Join-Path $PSScriptRoot 'DeskTiles.svg'
 $pngPath = Join-Path $PSScriptRoot 'DeskTiles-logo.png'
-Write-Host "Logo 輸入絕對路徑：$gridPath"
-Write-Host "Logo ICO 輸出絕對路徑：$icoPath"
-Write-Host "Logo SVG 輸出絕對路徑：$svgPath"
-Write-Host "Logo PNG 輸出絕對路徑：$pngPath"
-Write-Host '[Logo 1/4] 讀取並驗證 32×32 黑白像素格'
-$grid = [IO.File]::ReadAllLines($gridPath)
-if ($grid.Count -ne 32) { throw 'Logo 必須有 32 列。' }
-foreach ($row in $grid) { if ($row -notmatch '^[.#]{32}$') { throw 'Logo 每列須含 32 個 . 或 #。' } }
-Write-Host '[Logo 2/4] 輸出像素 SVG 與 512px PNG'
-$svg = [Text.StringBuilder]::new()
-[void]$svg.AppendLine('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 32 32" shape-rendering="crispEdges" role="img" aria-label="DeskTiles black and white pixel logo">')
-[void]$svg.AppendLine('<rect width="32" height="32" fill="white"/><g fill="black">')
+$icoPath = Join-Path $PSScriptRoot 'DeskTiles.ico'
+$macAssets = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\DeskTile_mac\assets'))
+Write-Host "Logo 輸入 SVG：$svgPath"
+Write-Host "Logo 輸出 PNG：$pngPath"
+Write-Host "Logo 輸出 ICO：$icoPath"
+Write-Host "Mac 圖示素材輸出：$macAssets"
+Write-Host '[Logo 1/4] 讀取圓角向量母稿'
 Add-Type -AssemblyName System.Drawing
-$png = [Drawing.Bitmap]::new(512,512)
-$graphics = [Drawing.Graphics]::FromImage($png)
-try {
-    $graphics.Clear([Drawing.Color]::White)
-    for ($y=0; $y -lt 32; $y++) { for ($x=0; $x -lt 32; $x++) { if ($grid[$y][$x] -eq '#') {
-        [void]$svg.AppendLine(('<rect x="{0}" y="{1}" width="1" height="1"/>' -f $x,$y))
-        $graphics.FillRectangle([Drawing.Brushes]::Black,$x*16,$y*16,16,16)
-    } } }
-    $png.Save($pngPath,[Drawing.Imaging.ImageFormat]::Png)
-} finally { $graphics.Dispose(); $png.Dispose() }
-[void]$svg.AppendLine('</g></svg>')
-[IO.File]::WriteAllText($svgPath,$svg.ToString(),[Text.UTF8Encoding]::new($false))
-Write-Host '[Logo 3/4] 建立 16／32／48／64／128／256px ICO，使用最近鄰像素取樣'
-$sizes = @(16,32,48,64,128,256)
-$frames = [Collections.Generic.List[byte[]]]::new()
-foreach ($size in $sizes) {
-    $maskRow = [int]([Math]::Ceiling($size/32.0)*4)
-    $memory = [IO.MemoryStream]::new()
-    $writer = [IO.BinaryWriter]::new($memory)
-    try {
-        $writer.Write([uint32]40); $writer.Write([int]$size); $writer.Write([int]($size*2))
-        $writer.Write([uint16]1); $writer.Write([uint16]32); $writer.Write([uint32]0)
-        $writer.Write([uint32]($size*$size*4+$maskRow*$size))
-        1..4 | ForEach-Object { $writer.Write([uint32]0) }
-        for ($y=$size-1; $y -ge 0; $y--) { for ($x=0; $x -lt $size; $x++) {
-            $sourceX = [int][Math]::Floor($x*32.0/$size)
-            $sourceY = [int][Math]::Floor($y*32.0/$size)
-            if ($grid[$sourceY][$sourceX] -eq '#') { $writer.Write([uint32]0xFF000000L) }
-            else { $writer.Write([uint32]0xFFFFFFFFL) }
-        } }
-        $writer.Write([byte[]]::new($maskRow*$size))
-        $writer.Flush(); $frames.Add($memory.ToArray())
-    } finally { $writer.Dispose(); $memory.Dispose() }
-}
-$file = [IO.File]::Create($icoPath)
-$ico = [IO.BinaryWriter]::new($file)
-try {
-    $ico.Write([uint16]0); $ico.Write([uint16]1); $ico.Write([uint16]$sizes.Count)
-    $offset = 6+16*$sizes.Count
-    for ($i=0; $i -lt $sizes.Count; $i++) {
-        $dimension = if ($sizes[$i] -eq 256) { 0 } else { $sizes[$i] }
-        $ico.Write([byte]$dimension); $ico.Write([byte]$dimension); $ico.Write([byte]0); $ico.Write([byte]0)
-        $ico.Write([uint16]1); $ico.Write([uint16]32)
-        $ico.Write([uint32]$frames[$i].Length); $ico.Write([uint32]$offset)
-        $offset += $frames[$i].Length
+if (-not ('DeskTiles.VectorIcon' -as [type])) {
+Add-Type -ReferencedAssemblies @('System.Drawing','System.Xml') -TypeDefinition @'
+using System;
+using System.IO;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Xml;
+namespace DeskTiles {
+ public static class VectorIcon {
+  static float Number(string s) { return float.Parse(s, CultureInfo.InvariantCulture); }
+  static GraphicsPath Path(string data) {
+   var tokens = Regex.Matches(data, @"[MLCZ]|-?\d+(?:\.\d+)?");
+   var p = new GraphicsPath(); var last = new PointF();
+   for (int i=0;i<tokens.Count;) {
+    string op = tokens[i++].Value;
+    if (op=="M") { last=new PointF(Number(tokens[i++].Value),Number(tokens[i++].Value)); p.StartFigure(); }
+    else if (op=="L") { var next=new PointF(Number(tokens[i++].Value),Number(tokens[i++].Value));p.AddLine(last,next);last=next; }
+    else if (op=="C") {
+     var a=new PointF(Number(tokens[i++].Value),Number(tokens[i++].Value));
+     var b=new PointF(Number(tokens[i++].Value),Number(tokens[i++].Value));
+     var c=new PointF(Number(tokens[i++].Value),Number(tokens[i++].Value));
+     p.AddBezier(last,a,b,c);last=c;
+    } else if(op=="Z") p.CloseFigure(); else throw new InvalidDataException("Unsupported path command");
+   }
+   return p;
+  }
+  public static byte[] Render(string source, int size) {
+   var xml=new XmlDocument();xml.XmlResolver=null;xml.Load(source);
+   int high=size*4;
+   using(var large=new Bitmap(high,high,PixelFormat.Format32bppArgb))
+   using(var g=Graphics.FromImage(large)) {
+    g.Clear(Color.Transparent);g.SmoothingMode=SmoothingMode.AntiAlias;
+    g.ScaleTransform(high/1024f,high/1024f);
+    foreach(XmlElement node in xml.GetElementsByTagName("path")) {
+     string fill=node.GetAttribute("fill");
+     if(fill=="") fill=((XmlElement)node.ParentNode).GetAttribute("fill");
+     using(var brush=new SolidBrush(ColorTranslator.FromHtml(fill)))
+     using(var path=Path(node.GetAttribute("d"))) g.FillPath(brush,path);
     }
-    foreach ($frame in $frames) { $ico.Write($frame) }
-} finally { $ico.Dispose(); $file.Dispose() }
-Write-Host '[Logo 4/4] 黑白像素 Logo 已完成'
+    using(var output=new Bitmap(size,size,PixelFormat.Format32bppArgb))
+    using(var final=Graphics.FromImage(output))
+    using(var memory=new MemoryStream())
+    using(var attributes=new ImageAttributes()) {
+     final.CompositingMode=CompositingMode.SourceCopy;
+     final.InterpolationMode=InterpolationMode.HighQualityBicubic;
+     final.PixelOffsetMode=PixelOffsetMode.HighQuality;
+     attributes.SetWrapMode(WrapMode.TileFlipXY);
+     final.DrawImage(large,new Rectangle(0,0,size,size),0,0,high,high,GraphicsUnit.Pixel,attributes);
+     output.Save(memory,ImageFormat.Png);return memory.ToArray();
+    }
+   }
+  }
+ }
+}
+'@
+}
+Write-Host '[Logo 2/4] 以抗鋸齒輸出 1024px 透明背景 PNG'
+[IO.File]::WriteAllBytes($pngPath,[DeskTiles.VectorIcon]::Render($svgPath,1024))
+Write-Host '[Logo 3/4] 逐尺寸由向量產生平滑 ICO'
+$sizes=@(16,20,24,32,40,48,64,128,256)
+$frames=@{}
+foreach($size in $sizes){$frames[$size]=[DeskTiles.VectorIcon]::Render($svgPath,$size)}
+$stream=[IO.File]::Create($icoPath)
+$writer=[IO.BinaryWriter]::new($stream)
+try {
+ $writer.Write([uint16]0);$writer.Write([uint16]1);$writer.Write([uint16]$sizes.Count)
+ $offset=6+16*$sizes.Count
+ foreach($size in $sizes){
+  $dimension=if($size -eq 256){0}else{$size}
+  $writer.Write([byte]$dimension);$writer.Write([byte]$dimension);$writer.Write([byte]0);$writer.Write([byte]0)
+  $writer.Write([uint16]1);$writer.Write([uint16]32)
+  $writer.Write([uint32]$frames[$size].Length);$writer.Write([uint32]$offset)
+  $offset+=$frames[$size].Length
+ }
+ foreach($size in $sizes){$writer.Write([byte[]]$frames[$size])}
+} finally {$writer.Dispose();$stream.Dispose()}
+Write-Host '[Logo 4/4] 同步 macOS 的共用向量與高解析 PNG'
+if(Test-Path -LiteralPath $macAssets){
+ Copy-Item -LiteralPath $svgPath -Destination (Join-Path $macAssets 'DeskTiles.svg') -Force
+ Copy-Item -LiteralPath $pngPath -Destination (Join-Path $macAssets 'DeskTiles-logo.png') -Force
+}
+Write-Host '圓角圖示已完成；Mac build.sh 會由 PNG 產生 iconset／ICNS，再重新簽章。'

@@ -1,4 +1,4 @@
-param([switch]$Integration, [ValidateSet('HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe')][string]$OutputName = 'DeskTiles.exe')
+﻿param([switch]$Integration, [ValidateSet('HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe')][string]$OutputName = 'DeskTiles.exe')
 $ErrorActionPreference = 'Stop'
 $sourceRoot = [IO.Path]::GetFullPath($PSScriptRoot)
 $outputRoot = Join-Path $sourceRoot 'build'
@@ -8,8 +8,12 @@ Write-Host "輸入檔案：$(Join-Path $sourceRoot 'win32.cpp')"
 Write-Host "核心輸入：$(Join-Path $sourceRoot 'core.hpp')"
 Write-Host "配置輸入：$(Join-Path $sourceRoot 'config.hpp')"
 Write-Host "JSON 相依檔案：$(Join-Path $sourceRoot 'third_party\nlohmann\json.hpp')"
+Write-Host "鬧鐘核心輸入：$(Join-Path $sourceRoot 'alarm.hpp')"
+Write-Host "啟動同意規則輸入：$(Join-Path $sourceRoot 'startup.hpp')"
+Write-Host "Windows 新功能輸入：$(Join-Path $sourceRoot 'win32_features.hpp')"
 Write-Host "測試輸入：$(Join-Path $sourceRoot 'tests.cpp')"
-Write-Host "Logo 像素輸入：$(Join-Path $sourceRoot 'assets\logo-grid.txt')"
+Write-Host "翻譯表輸入：$(Join-Path $sourceRoot 'localization.hpp')"
+Write-Host "Logo 向量輸入：$(Join-Path $sourceRoot 'assets\DeskTiles.svg')"
 Write-Host "圖示資源輸入：$(Join-Path $sourceRoot 'DeskTiles.rc')"
 Write-Host "圖示資源輸出：$(Join-Path $outputRoot 'DeskTiles.res')"
 Write-Host "輸出執行檔：$executablePath"

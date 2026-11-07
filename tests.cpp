@@ -2,6 +2,8 @@
 #include <iostream>
 #include "core.hpp"
 #include "config.hpp"
+#include "localization.hpp"
+#include "startup.hpp"
 using namespace hexdesk;
 int checks=0;
 void Check(bool result,const char* message) {
@@ -12,13 +14,13 @@ int main(int argc,char** argv) {
     std::cout << "Input: " << (argc>1?argv[1]:"core.hpp (in-memory fixtures)") << '\n';
     std::cout << "Output: stdout; no data files modified\n";
     try {
-        std::cout << "[1/9] Selection\n";
+        std::cout << "[1/12] Selection\n";
         std::set<int> chosen;
         Select(chosen,1,false); Select(chosen,2,true);
         Check(chosen.size()==2,"shift add");
         Select(chosen,1,true); Check(chosen==std::set<int>{2},"shift toggle");
         Select(chosen,3,false); Check(chosen==std::set<int>{3},"single replaces");
-        std::cout << "[2/9] Geometry and group snap\n";
+        std::cout << "[2/12] Geometry and group snap\n";
         for (auto p:Neighbors()) Check(!Overlaps({},p),"neighbors must share edges without overlap");
         Check(Overlaps({},{10,10}),"collision");
         Check(!Overlaps({},{400,0}),"separated");
@@ -37,14 +39,14 @@ int main(int argc,char** argv) {
         Check(tiles[0].position.x==500,"stationary tile unchanged");
         Check(!ValidDelta(tiles,{2},{120,Height/2}),"invalid overlapping drop");
         Snap(tiles,{2,3},{2000,2000},&snapped); Check(!snapped,"distant no snap");
-        std::cout << "[3/9] Timers\n";
+        std::cout << "[3/12] Timers\n";
         Tile timer; timer.kind=Kind::Timer; timer.running=true; timer.duration=2;
         Check(!Advance(timer,1.5) && Clock(timer)=="00:00:01","countdown rounding");
         Check(Advance(timer,1) && !timer.running,"complete once");
         Check(!Advance(timer,1),"no repeated alert");
         timer.countdown=false; timer.elapsed=0; timer.running=true;
         Advance(timer,3661.9); Check(Clock(timer)=="01:01:01","count up");
-        std::cout << "[4/9] Persistence and Unicode\n";
+        std::cout << "[4/12] Persistence and Unicode\n";
         tiles[0].text="你好\n\"hex\" \\ test"; tiles[0].image="D:/圖片/測試.png";
         tiles[0].running=true; tiles[0].kind=Kind::Timer;
         tiles[0].borderStyle=BorderStyle::Rgb;tiles[0].borderColor=0xF5B24A;
@@ -67,7 +69,7 @@ int main(int argc,char** argv) {
         Check(previousVersion[0].size==160 && previousVersion[0].fontSize==22 &&
             previousVersion[0].borderStyle==BorderStyle::Rgb && previousVersion[0].borderWidth==4 &&
             previousVersion[0].textColor==0x71EDC4,"v2 preserves borders and timer defaults");
-        std::cout << "[5/9] Border colors, animation and pixel geometry\n";
+        std::cout << "[5/12] Border colors, animation and pixel geometry\n";
         std::uint32_t color=0;
         Check(ParseColor("#aBcD01",color) && color==0xABCD01 && ColorText(color)=="#ABCD01","hex color roundtrip");
         Check(ParseColor("00FF80",color) && color==0x00FF80,"color without prefix");
@@ -89,7 +91,7 @@ int main(int argc,char** argv) {
             }
             Check(points.size()>6 && bounded && orthogonal,"pixel outline stays bounded with staircase edges");
         }
-        std::cout << "[6/9] Variable geometry, resizing and collision rollback\n";
+        std::cout << "[6/12] Variable geometry, resizing and collision rollback\n";
         for(double fixed:{80.0,160.0,480.0})for(double moving:{80.0,240.0,480.0}) {
             bool edges=true,inward=true;
             for(auto p:Neighbors(fixed,moving)) {
@@ -116,8 +118,8 @@ int main(int argc,char** argv) {
         Check(snapped && std::abs(mixedSnap.x-target.x)<1e-8 && std::abs(mixedSnap.y-target.y)<1e-8,"mixed-size group snaps without overlap");
         auto largePixel=BorderOutline(BorderStyle::Pixel,8,480);
         Check(std::all_of(largePixel.begin(),largePixel.end(),[](Point p){return p.x>=0 && p.x<=480 && p.y>=0 && p.y<=TileHeight(480);}),"resized pixel outline bounds");
-        std::cout << "[7/9] Invalid input\n";
-        for (const auto& text:{"broken", "HEXDESK 6\n0", "HEXDESK 1\n501",
+        std::cout << "[7/12] Invalid input\n";
+        for (const auto& text:{"broken", "HEXDESK 7\n0", "HEXDESK 1\n501",
              "HEXDESK 1\n1\n1 0 0 5 1 1 300 0 \"x\" \"\"",
              "HEXDESK 1\n1\n1 0 0 0 1 1 -1 0 \"x\" \"\"",
              "HEXDESK 1\n0\ngarbage"}) {
@@ -137,7 +139,7 @@ int main(int argc,char** argv) {
             bool rejected=false;try{Load(bad);}catch(...){rejected=true;}
             Check(rejected,"invalid layout and typography rejected");
         }
-        std::cout << "[8/9] Background, breathing and portable JSON bundles\n";
+        std::cout << "[8/12] Background, breathing and portable JSON bundles\n";
         Tile fresh;fresh.id=1;fresh.borderStyle=BorderStyle::Breathing;fresh.borderColor=0xCC88FF;
         fresh.backgroundColor=0x102030;fresh.backgroundTransparency=100;fresh.rgbCycleSeconds=4;
         Check(AnimatedBorder(fresh),"breathing uses shared animation clock");
@@ -184,7 +186,7 @@ int main(int argc,char** argv) {
         bool duplicate=false;try{std::stringstream repeated("{\"format\":\"HexDesk\",\"format\":\"Other\"}");ParseBundle(repeated);}catch(...){duplicate=true;}
         Check(duplicate,"duplicate JSON keys rejected");
         auto empty=BundleJson(Bundle{});Check(ReadBundle(empty).tiles.empty(),"empty whole configuration supported");
-        std::cout << "[9/9] Multiple shapes, contact geometry and compatibility\n";
+        std::cout << "[9/12] Multiple shapes, contact geometry and compatibility\n";
         Check(Tile{}.shape==Shape::Hexagon && TileHeight(180,Shape::Rectangle)==120,"default hexagon and rectangular aspect ratio");
         for(auto fixedShape:{Shape::Hexagon,Shape::Triangle,Shape::Rectangle})
             for(auto movingShape:{Shape::Hexagon,Shape::Triangle,Shape::Rectangle})for(double fixedSize:{80.0,160.0,480.0}) {
@@ -209,7 +211,7 @@ int main(int argc,char** argv) {
         std::stringstream shapeSaved;Save(shapeSaved,shapes);auto shapeLoaded=Load(shapeSaved);
         Check(shapeLoaded[1].shape==Shape::Triangle&&shapeLoaded[2].shape==Shape::Rectangle,"v5 shape persistence");
         auto shapeJson=BundleJson(Pack(shapes,[](const std::string&){return Asset{};}));auto shapeBundle=ReadBundle(shapeJson);
-        Check(shapeJson["version"]==2&&shapeBundle.tiles[1].shape==Shape::Triangle&&shapeBundle.tiles[2].shape==Shape::Rectangle,"JSON v2 shape roundtrip");
+        Check(shapeJson["version"]==3&&shapeBundle.tiles[1].shape==Shape::Triangle&&shapeBundle.tiles[2].shape==Shape::Rectangle,"JSON v2 shape roundtrip");
         auto oldJson=shapeJson;oldJson["version"]=1;for(auto& item:oldJson["tiles"])item.erase("shape");
         auto oldBundle=ReadBundle(oldJson);Check(std::all_of(oldBundle.tiles.begin(),oldBundle.tiles.end(),[](const Tile& t){return t.shape==Shape::Hexagon;}),"legacy JSON defaults to hexagons");
         std::stringstream v4("HEXDESK 4\n1\n1 0 0 0 1 1 300 0 \"legacy\" \"\" 0 123 2 6 1 160 \"Arial\" 14 123 1517360 100\n");
@@ -217,8 +219,8 @@ int main(int argc,char** argv) {
         for(auto badShape:{-1,3}) {
             auto bad=shapeJson;bad["tiles"][0]["shape"]=badShape;bool rejected=false;
             try{ReadBundle(bad);}catch(...){rejected=true;}Check(rejected,"invalid JSON shape rejected");
-            std::string invalid=shapeSaved.str();auto lineEnd=invalid.find('\n',invalid.find('\n')+1);auto firstEnd=invalid.find('\n',lineEnd+1);
-            auto shapeAt=invalid.rfind(' ',firstEnd);invalid.replace(shapeAt+1,firstEnd-shapeAt-1,std::to_string(badShape));
+            std::string invalid=shapeSaved.str();auto lineEnd=invalid.find('\n',invalid.find('\n')+1);
+            auto alarmAt=invalid.find(" 0 540 127 \"\" 0 0",lineEnd+1);auto shapeAt=invalid.rfind(' ',alarmAt-1);invalid.replace(shapeAt+1,alarmAt-shapeAt-1,std::to_string(badShape));
             rejected=false;try{std::stringstream badData(invalid);Load(badData);}catch(...){rejected=true;}Check(rejected,"invalid native shape rejected");
         }
         std::vector<Tile> pair(2);pair[0].id=1;pair[0].shape=Shape::Rectangle;pair[0].position={500,400};
@@ -238,6 +240,94 @@ int main(int argc,char** argv) {
             const auto& a=mergedShapes[i];const auto& b=mergedShapes[j];separated&=!Overlaps(a.position,b.position,a.size,b.size,a.shape,b.shape);
         }
         Check(separated&&mergedShapes[3].shape==Shape::Triangle&&mergedShapes[4].shape==Shape::Rectangle,"JSON merge preserves mixed shapes and prevents collision");
+
+        std::cout << "[10/12] Interface translations and language codes\n";
+        using namespace desktile_ui;
+        bool catalogValid=true,englishValid=true;std::set<std::wstring> translationKeys;
+        for(const auto& entry:Catalog) {
+            catalogValid&=entry.chinese[0] && entry.english[0] && translationKeys.insert(entry.chinese).second;
+            for(const wchar_t* c=entry.english;*c;++c)englishValid&=!(*c>=0x3400 && *c<=0x9FFF);
+        }
+        Check(catalogValid,"translation keys are unique and both languages present");
+        Check(englishValid,"English catalog contains no untranslated Chinese");
+        language=Language::English;
+        Check(std::wstring(Tr(L"語言"))==L"Language" && std::wstring(Tr(L"三角形"))==L"Triangle","English interface lookup");
+        Check(TrCounted(L" 格",1)==L" tile" && TrCounted(L" 格",2)==L" tiles" && TrCounted(L" 個字體。",1)==L" font.","English singular and plural counts");
+        Check(std::wstring(Tr(L"custom user content"))==L"custom user content","unknown content left unchanged");
+        Check(LocalizeError(L"JSON 欄位重複")==L"Duplicate JSON field","backend error localized");
+        Check(LanguageFromCode("en")==Language::English && std::string(LanguageCode(Language::English))=="en","English preference code");
+        Check(LanguageFromCode("unsupported")==Language::TraditionalChinese,"unknown language safely defaults to Traditional Chinese");
+        language=Language::TraditionalChinese;
+        Check(std::wstring(Tr(L"語言"))==L"語言","Traditional Chinese interface lookup");
+
+        std::cout << "[11/12] Alarms, recurrence and persisted text\n";
+#ifdef _WIN32
+        _putenv_s("TZ","UTC0");_tzset();
+#else
+        setenv("TZ","UTC0",1);tzset();
+#endif
+        auto epoch=[](const std::string& date,int minute){std::tm day{};if(!ParseAlarmDate(date,day))throw std::runtime_error("bad test date");return LocalOccurrence(day,minute);};
+        int minute=0;std::tm calendar{};
+        Check(ParseAlarmTime("00:00",minute)&&minute==0&&ParseAlarmTime("23:59",minute)&&minute==1439,"24-hour alarm bounds");
+        for(auto text:{"24:00","12:60","1:00","-1:00","09:00x","ab:cd"})Check(!ParseAlarmTime(text,minute),"invalid alarm time rejected");
+        Check(ParseAlarmDate("2028-02-29",calendar)&&!ParseAlarmDate("2026-02-29",calendar)&&!ParseAlarmDate("2100-01-01",calendar),"calendar leap day and supported range");
+        for(auto text:{"2026-00-10","2026-13-01","2026-04-31","2026-1-01","2026-01-00","2026-01-01x"})Check(!ParseAlarmDate(text,calendar),"invalid alarm date rejected");
+        Alarm alarm;Check(alarm.repeat==AlarmRepeat::Once&&!alarm.enabled&&ValidAlarm(alarm),"alarm defaults to disabled one-time");
+        alarm.date="2026-11-03";alarm.minute=540;alarm.enabled=true;
+        auto due=epoch(alarm.date,540);ArmAlarm(alarm,due-1);
+        Check(alarm.nextDue==due&&!AdvanceAlarm(alarm,due-1),"one-time alarm waits for exact due time");
+        Check(AdvanceAlarm(alarm,due)&&!alarm.enabled&&!AdvanceAlarm(alarm,due+1),"one-time alarm fires once and disables");
+        alarm.lastFired=0;alarm.enabled=true;ArmAlarm(alarm,due+600);
+        Check(!alarm.enabled&&!alarm.nextDue,"overdue one-time alarm is disabled on restart without ringing");
+        alarm.repeat=AlarmRepeat::Daily;alarm.enabled=true;alarm.lastFired=0;ArmAlarm(alarm,due-1);
+        Check(AdvanceAlarm(alarm,due+3*86400+60)&&alarm.nextDue==due+4*86400,"sleep over several days produces one reminder and schedules future date");
+        Check(!AdvanceAlarm(alarm,due-100)&&!AdvanceAlarm(alarm,due+3*86400+60),"clock rollback cannot replay consumed alarm");
+        alarm.lastFired=0;ArmAlarm(alarm,due-86400-1);AdvanceAlarm(alarm,due-3600);
+        Check(alarm.nextDue==due,"late wake before today's time still retains today's future occurrence");
+        alarm.repeat=AlarmRepeat::Weekly;alarm.weekdays=1<<1;alarm.lastFired=0;ArmAlarm(alarm,due-1);
+        Check(alarm.nextDue==epoch("2026-11-09",540),"weekly alarm chooses next selected Monday across week boundary");
+        alarm.weekdays=(1<<2)|(1<<4);ArmAlarm(alarm,due);
+        Check(alarm.nextDue==epoch("2026-11-05",540),"weekly multiple weekdays and exact time roll forward");
+        alarm.weekdays=0;Check(!ValidAlarm(alarm)&&!NextAlarm(alarm,due),"empty weekly day set rejected");
+        Tile alarmTile;alarmTile.id=1;alarmTile.kind=Kind::Alarm;alarmTile.text="吃藥 / Medicine";
+        alarmTile.alarm.repeat=AlarmRepeat::Daily;alarmTile.alarm.enabled=true;alarmTile.alarm.date="2026-11-03";alarmTile.alarm.lastFired=due;
+        ArmAlarm(alarmTile.alarm,due);std::stringstream alarmData;Save(alarmData,{alarmTile});auto loadedAlarm=Load(alarmData);
+        Check(loadedAlarm[0].kind==Kind::Alarm&&loadedAlarm[0].text==alarmTile.text&&loadedAlarm[0].alarm.enabled&&
+            loadedAlarm[0].alarm.lastFired==due&&loadedAlarm[0].alarm.nextDue==0,"v6 preserves text/alarm/consumed slot but not runtime due cache");
+        auto alarmJson=BundleJson(Pack({alarmTile},[](const std::string&){return Asset{};}));auto loadedJson=ReadBundle(alarmJson);
+        Check(alarmJson["version"]==3&&loadedJson.tiles[0].alarm.lastFired==due&&loadedJson.tiles[0].text==alarmTile.text,"JSON v3 alarm/text roundtrip");
+        Check(!alarmJson.contains("autostart")&&!alarmJson.contains("startup"),"OS startup configuration excluded from portable JSON");
+        for(int invalid=0;invalid<6;++invalid) {
+            auto bad=alarmJson;
+            switch(invalid){case 0:bad["tiles"][0]["alarm"]["minute"]=1440;break;case 1:bad["tiles"][0]["alarm"]["repeat"]=3;break;
+            case 2:bad["tiles"][0]["alarm"]["lastFired"]=-1;break;case 3:bad["tiles"][0]["alarm"]["lastFired"]=1.5;break;
+            case 4:bad["tiles"][0]["alarm"]["date"]="2026-02-30";break;case 5:bad["tiles"][0]["alarm"]["enabled"]="true";break;}
+            bool rejected=false;try{ReadBundle(bad);}catch(...){rejected=true;}Check(rejected,"invalid alarm JSON rejected transactionally");
+        }
+        auto oldV2=alarmJson;oldV2["version"]=2;oldV2["tiles"][0]["kind"]=2;oldV2["tiles"][0].erase("alarm");
+        auto older=ReadBundle(oldV2);Check(!older.tiles[0].alarm.enabled&&older.tiles[0].text==alarmTile.text,"legacy JSON timer retains text without enabling alarms");
+        auto incoming=Merge({alarmTile},loadedJson.tiles);Check(incoming[1].id!=alarmTile.id&&incoming[1].alarm.enabled&&incoming[1].text==alarmTile.text,"merge preserves alarm settings and text with remapped ID");
+#ifdef _WIN32
+        _putenv_s("TZ","PST8PDT");_tzset();
+#else
+        setenv("TZ","PST8PDT",1);tzset();
+#endif
+        Alarm dst;dst.enabled=true;dst.repeat=AlarmRepeat::Daily;dst.minute=150;
+        ArmAlarm(dst,epoch("2026-03-07",180));
+        Check(DateText(LocalTime(dst.nextDue))=="2026-03-09"&&LocalTime(dst.nextDue).tm_hour==2,"DST spring nonexistent time skips that date");
+        dst.minute=90;dst.lastFired=0;ArmAlarm(dst,epoch("2026-10-31",120));auto fold=dst.nextDue;
+        Check(AdvanceAlarm(dst,fold)&&DateText(LocalTime(dst.nextDue))=="2026-11-02"&&!AdvanceAlarm(dst,fold+3600),"DST fall repeated local hour fires only once per date");
+        std::cout << "[12/12] Startup consent and safe Windows quoting\n";
+        int writes=0;bool desired=false;
+        auto writer=[&](bool enabled){++writes;desired=enabled;return true;};
+        Check(!desktile_startup::Change(true,false,writer)&&writes==0,"automatic startup cannot enable without explicit consent");
+        Check(desktile_startup::Change(true,true,writer)&&writes==1&&desired,"explicit consent enables through writer");
+        Check(desktile_startup::Change(false,false,writer)&&writes==2&&!desired,"user may disable without another consent prompt");
+        Check(!desktile_startup::Change(true,true,[](bool){return false;}),"registration failure is returned to caller");
+        auto startupCommand=desktile_startup::Command(L"D:\\My Apps\\DeskTiles.exe",L"D:\\My Data\\");
+        Check(startupCommand==L"\"D:\\My Apps\\DeskTiles.exe\" --startup --data-dir \"D:\\My Data\\\\\"","startup command quotes spaces and trailing directory slash");
+        Check(desktile_startup::Command(L"D:\\bad\".exe",L"D:\\Data").empty(),"invalid quoted executable rejected");
+
         std::cout << "PASS: " << checks << " checks\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << '\n'; return 1; }

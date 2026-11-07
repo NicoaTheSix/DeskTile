@@ -144,7 +144,7 @@ static NSTextField *Field(NSView *v,NSString *s,NSRect r){NSTextField *f=[[NSTex
 -(BOOL)windowShouldClose:(NSWindow*)window{[window orderOut:nil];return NO;}
 -(void)createControl{
  control=[[ControlWindow alloc] initWithContentRect:NSMakeRect(0,0,820,710) styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable backing:NSBackingStoreBuffered defer:NO];control.title=@"桌面拼格 · DeskTiles";control.delegate=self;control.backgroundColor=Color(0xF3F7F5);[control center];FlippedView *v=[[FlippedView alloc] initWithFrame:NSMakeRect(0,0,820,710)];control.contentView=v;
- NSImage *logo=[[NSImage alloc] initWithContentsOfFile:[NSBundle.mainBundle pathForResource:@"DeskTiles" ofType:@"svg"]];if(logo){NSImageView *iv=[[NSImageView alloc] initWithFrame:NSMakeRect(28,20,64,64)];iv.image=logo;[v addSubview:iv];NSApp.applicationIconImage=logo;}
+ NSImage *logo=[[NSImage alloc] initWithContentsOfFile:[NSBundle.mainBundle pathForResource:@"DeskTiles" ofType:@"icns"]];if(logo){NSImageView *iv=[[NSImageView alloc] initWithFrame:NSMakeRect(28,20,64,64)];iv.image=logo;[v addSubview:iv];NSApp.applicationIconImage=logo;}
  Label(v,@"DESKTILES",NSMakeRect(108,30,360,45),32);Label(v,@"桌面上的一小格，留給重要的事。",NSMakeRect(28,92,600,28));Button(v,@"配置 JSON…",NSMakeRect(620,30,170,36),20);
  Label(v,@"桌面圖形",NSMakeRect(28,130,225,26));selectionLabel=Label(v,@"請先選取圖形",NSMakeRect(280,130,510,26));
  NSScrollView *scroll=[[NSScrollView alloc] initWithFrame:NSMakeRect(28,166,225,210)];scroll.hasVerticalScroller=YES;scroll.borderType=NSBezelBorder;list=[[NSTableView alloc] initWithFrame:scroll.bounds];NSTableColumn *col=[[NSTableColumn alloc] initWithIdentifier:@"tile"];col.width=220;((NSTextFieldCell*)col.dataCell).font=[NSFont systemFontOfSize:17];[list addTableColumn:col];list.headerView=nil;list.rowHeight=28;list.allowsMultipleSelection=YES;list.dataSource=self;list.delegate=self;scroll.documentView=list;[v addSubview:scroll];
@@ -244,6 +244,7 @@ static NSTextField *Field(NSView *v,NSString *s,NSRect r){NSTextField *f=[[NSTex
 -(void)smoke{
  try{
  if(windows.count!=tiles.size()||!control.isVisible)throw std::runtime_error("視窗初始化失敗");
+ if(![NSApp.applicationIconImage isValid] || ![NSFileManager.defaultManager fileExistsAtPath:[NSBundle.mainBundle pathForResource:@"DeskTiles" ofType:@"icns"]])throw std::runtime_error("App icon failed to load");
  auto original=tiles;selected={tiles.front().id};primary=tiles.front().id;
  for(int n=0;n<3;++n)[self add:static_cast<Shape>(n)];
  if(windows.count!=original.size()+3)throw std::runtime_error("新增形狀失敗");

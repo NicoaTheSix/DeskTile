@@ -1,4 +1,4 @@
-param([string]$ExecutableName = 'DeskTiles-update.exe',[string]$FirstExecutableName = '')
+﻿param([string]$ExecutableName = 'DeskTiles-update.exe',[string]$FirstExecutableName = '')
 $ErrorActionPreference = 'Stop'
 $executable = Join-Path $PSScriptRoot ('build\' + $ExecutableName)
 $firstExecutable = if ($FirstExecutableName) { Join-Path $PSScriptRoot ('build\' + $FirstExecutableName) } else { $executable }

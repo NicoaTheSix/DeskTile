@@ -1,4 +1,4 @@
-param([string]$DataDir = (Join-Path $env:LOCALAPPDATA 'HexDesk'),
+﻿param([string]$DataDir = (Join-Path $env:LOCALAPPDATA 'HexDesk'),
     [ValidateSet('Latest','HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe')][string]$ExecutableName = 'Latest')
 $ErrorActionPreference = 'Stop'
 if ($ExecutableName -eq 'Latest') {

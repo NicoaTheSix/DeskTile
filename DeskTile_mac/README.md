@@ -56,3 +56,11 @@ C++ 核心與 JSON 格式直接沿用原版，介面以 Objective-C++／AppKit �
 參考提交：`4a7fc0aa41e05e48f01e389e3ee948a628022064`。
 
 `Sources/core.hpp`、`Sources/config.hpp`、`tests/tests.cpp`、Logo 和範例配置取自該提交，保留原始內容；Windows clone 位於相鄰的 `DeskTile_windows/`，未修改。JSON 相依檔案為 nlohmann/json，MIT 授權見 `Sources/third_party/nlohmann/LICENSE.MIT`。
+
+## 圓角 App 圖示建置與驗證
+
+使用已選定的黑白圓角四圖形設計。assets/DeskTiles-logo.png 為 1024px 透明外角母圖；對應 SVG 與 Windows 共用。build.sh 執行前列出絕對來源與輸出位置，依五階段顯示核心測試、標準／Retina iconset、Universal 2 編譯、完整 App 簽章及完成狀態。Info.plist 的 CFBundleIconFile 與控制面板／Dock 均載入 DeskTiles.icns，Finder 尚未啟動 App 時也有正確圖示。
+
+verify.sh 以四階段檢查核心、ICNS 解碼、Finder bundle 設定、arm64／x86_64 與完整簽章，再啟動 AppKit smoke-test 檢查圖示載入；package.sh 以三階段驗證簽章、封裝、更新 SHA256。每次 iconset 解碼與 AppKit 驗證都使用獨立暫存目錄，可重複執行。
+
+更新時先結束舊程式，完整解壓縮新版再開啟；若 Dock 保留舊捷徑，可移除捷徑後將新版 App 拖回。此更新仍採 ad-hoc 簽章，沒有宣稱 Apple 公證或新增 Intel 實機驗證。

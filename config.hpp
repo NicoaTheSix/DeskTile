@@ -76,11 +76,13 @@ inline Bundle Pack(const std::vector<Tile>& tiles,const std::function<Asset(cons
     return bundle;
 }
 inline Json BundleJson(const Bundle& bundle) {
-    Json root={{"format","HexDesk"},{"version",2},{"tiles",Json::array()},{"images",Json::object()}};
+    Json root={{"format","HexDesk"},{"version",3},{"tiles",Json::array()},{"images",Json::object()}};
     for(const auto& t:bundle.tiles) {
         Json image=nullptr;auto it=bundle.tileImages.find(t.id);if(it!=bundle.tileImages.end())image=it->second;
         root["tiles"].push_back({{"id",t.id},{"position",{{"x",t.position.x},{"y",t.position.y}}},{"size",t.size},
             {"shape",static_cast<int>(t.shape)},{"kind",static_cast<int>(t.kind)},{"text",t.text},{"imageAsset",image},{"topmost",t.topmost},
+            {"alarm",{{"repeat",static_cast<int>(t.alarm.repeat)},{"minute",t.alarm.minute},{"weekdays",t.alarm.weekdays},
+                {"date",t.alarm.date},{"enabled",t.alarm.enabled},{"lastFired",t.alarm.lastFired}}},
             {"timer",{{"countdown",t.countdown},{"duration",t.duration},{"elapsed",t.elapsed}}},
             {"border",{{"style",static_cast<int>(t.borderStyle)},{"color",ColorText(t.borderColor)},
                 {"width",t.borderWidth},{"cycleSeconds",t.rgbCycleSeconds},{"animated",t.rgbAnimated}}},
@@ -106,7 +108,7 @@ inline std::uint32_t JsonColor(const Json& v) {
     std::uint32_t color=0;if(!ParseColor(JsonString(v,7),color))throw std::runtime_error("JSON 色碼無效");return color;
 }
 inline Bundle ReadBundle(const Json& root) {
-    if(!root.is_object() || root.at("format")!="HexDesk" || JsonInt(root.at("version"),1,2)<1 ||
+    if(!root.is_object() || root.at("format")!="HexDesk" || JsonInt(root.at("version"),1,3)<1 ||
         !root.at("tiles").is_array() || root.at("tiles").size()>500 || !root.at("images").is_object() || root.at("images").size()>500)
         throw std::runtime_error("不支援的桌面拼格 JSON 配置");
     Bundle bundle;size_t total=0;
@@ -121,8 +123,8 @@ inline Bundle ReadBundle(const Json& root) {
     }
     for(const auto& j:root.at("tiles")) {
         Tile t;t.id=JsonInt(j.at("id"),1,1000000);t.position={JsonNumber(j.at("position").at("x")),JsonNumber(j.at("position").at("y"))};
-        if(root.at("version")==2)t.shape=static_cast<Shape>(JsonInt(j.at("shape"),0,2));
-        t.size=JsonNumber(j.at("size"));t.kind=static_cast<Kind>(JsonInt(j.at("kind"),0,2));t.text=JsonString(j.at("text"),65536);
+        if(root.at("version")>=2)t.shape=static_cast<Shape>(JsonInt(j.at("shape"),0,2));
+        t.size=JsonNumber(j.at("size"));t.kind=static_cast<Kind>(JsonInt(j.at("kind"),0,root.at("version")>=3?3:2));t.text=JsonString(j.at("text"),65536);
         t.topmost=JsonBool(j.at("topmost"));const auto& timer=j.at("timer");
         t.countdown=JsonBool(timer.at("countdown"));t.duration=JsonNumber(timer.at("duration"));t.elapsed=JsonNumber(timer.at("elapsed"));
         const auto& b=j.at("border");t.borderStyle=static_cast<BorderStyle>(JsonInt(b.at("style"),0,3));
@@ -133,6 +135,14 @@ inline Bundle ReadBundle(const Json& root) {
         if(!j.at("imageAsset").is_null()) {
             auto key=JsonString(j.at("imageAsset"),80);if(!bundle.images.count(key))throw std::runtime_error("配置缺少圖片資料");
             bundle.tileImages[t.id]=key;
+        }
+        if(root.at("version")>=3) {
+            const auto& a=j.at("alarm");t.alarm.repeat=static_cast<AlarmRepeat>(JsonInt(a.at("repeat"),0,2));
+            t.alarm.minute=JsonInt(a.at("minute"),0,1439);t.alarm.weekdays=JsonInt(a.at("weekdays"),0,127);
+            t.alarm.date=JsonString(a.at("date"),10);t.alarm.enabled=JsonBool(a.at("enabled"));
+            if(!a.at("lastFired").is_number_integer()||a.at("lastFired")<0||a.at("lastFired")>4102444799LL)throw std::runtime_error("鬧鐘資料無效");
+            t.alarm.lastFired=a.at("lastFired").get<std::int64_t>();
+            if(!ValidAlarm(t.alarm))throw std::runtime_error("鬧鐘資料無效");
         }
         t.notified=t.countdown && t.elapsed>=t.duration;bundle.tiles.push_back(std::move(t));
     }

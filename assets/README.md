@@ -1,21 +1,20 @@
-# DeskTiles 黑白像素 Logo
+# DeskTiles 圓角黑白 Logo
 
-Logo 由六角形、三角形、矩形、圓形排列為 2×2，使用純黑與純白。
+採用使用者選定的 A 圓角幾何提案；保留六角形、三角形、矩形、圓形的 2×2 排列，白色圓角底板外為透明背景。
 
-輸入來源為此目錄的 `logo-grid.txt`，必須有 32 列，每列 32 個字元；`#` 為黑色、`.` 為白色。程式不在執行時讀取這些檔案，所有圖示會在建置時嵌入 EXE。
+## 來源與輸出
 
-執行 `build-logo.ps1` 時，先顯示輸入與全部輸出檔案的絕對路徑，再執行四階段流程：
+DeskTiles.svg 是唯一向量母稿，路徑使用 M/L/C/Z 指令。build-logo.ps1 直接渲染母稿，不再讀取舊的 logo-grid.txt；舊像素來源保留供歷史參考。
 
-1. 驗證 32×32 像素來源。
-2. 輸出 `DeskTiles.svg` 與 512×512 的 `DeskTiles-logo.png`；方形像素保留硬邊，僅黑白兩色。
-3. 以最近鄰取樣產生 `DeskTiles.ico`，包含 16、32、48、64、128、256px 的 Windows 圖示；不使用平滑濾鏡。
-4. 顯示完成狀態。
+執行 Windows PowerShell 5.1：
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build-logo.ps1
 
-在 Windows PowerShell 執行：
+執行前顯示輸入 SVG、輸出 PNG／ICO 與 Mac 素材目錄的絕對路徑，依四階段顯示進度：
+1. 讀取母稿，檢查可用繪圖組件。
+2. 以四倍取樣及抗鋸齒產生 1024×1024 PNG，保留外角 alpha。
+3. 每個 ICO 尺寸都直接從向量重新渲染，再封裝 16／20／24／32／40／48／64／128／256px PNG frame，供檔案、工作列、視窗與系統匣使用。
+4. 同步 DeskTile_mac/assets 的 SVG 與 PNG，Mac build.sh 以 sips／iconutil 建立標準與 Retina ICNS，於簽章前加入 App bundle。
 
-```powershell
-# 在本目錄執行
-.\build-logo.ps1
-```
+原圖示建置時嵌入 Windows EXE；Mac 的 Info.plist 設定 CFBundleIconFile，控制面板與 Dock 載入相同 ICNS。更新後須退出舊 App 再開啟新包；舊捷徑可能暫時保留系統圖示快取。
 
-此腳本使用 Windows 隨附的 System.Drawing，只在開發／建置時使用，不增加 EXE 的執行環境需求。專案根目錄的 `build.ps1` 會自動呼叫此腳本，再以 Resource Compiler 編譯 `DeskTiles.rc` 並連結圖示資源。完整程式操作流程及驗證紀錄見上一層的 `README.md`。
+設計提案與採用來源：原工作區 D:\DeskTile\assets\icon-concepts\A-rounded-geometric-r01.png；概念快照 933eabed33af563a9f9615f46367db1c7a1d2161。本次以原生向量重繪正式製作圖，去除提案展示畫布；不是直接縮小生成圖片。

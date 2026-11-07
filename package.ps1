@@ -1,4 +1,4 @@
-param([string]$ExecutableName = 'Latest')
+﻿param([string]$ExecutableName = 'Latest')
 $ErrorActionPreference = 'Stop'
 if ($ExecutableName -eq 'Latest') {
     $executable = @('DeskTiles.exe','DeskTiles-update.exe') | ForEach-Object { Join-Path $PSScriptRoot ('build\' + $_) } |
@@ -22,6 +22,7 @@ foreach ($directory in @($stagingApp,$releaseApp)) { New-Item -ItemType Director
 Write-Host '[打包 2/4] 準備免安裝執行檔、說明與授權'
 Copy-Item -LiteralPath $executable -Destination (Join-Path $stagingApp 'DeskTiles.exe')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'docs\使用說明.md') -Destination $stagingApp
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'docs\UserGuide.en.md') -Destination $stagingApp
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'docs\mixed-shapes.json') -Destination (Join-Path $stagingApp '範例配置.json')
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'third_party\nlohmann\LICENSE.MIT') -Destination (Join-Path $stagingApp 'THIRD-PARTY-NOTICES.txt')
 @'
@@ -32,11 +33,15 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'third_party\nlohmann\LICENSE.MI
 3. 在左側選擇形狀，按「新增圖形」；右側編輯內容後按套用。
 4. 右上角「配置 JSON…」可匯出含圖片的備份或匯入範例配置。
 5. 關閉控制視窗後，桌面圖形仍會繼續顯示；雙擊圖形可開啟控制視窗。
-6. 要結束程式，從圖形右鍵或系統匣選「儲存並結束桌面拼格」。
+6. 鬧鐘預設單次，可改每天／指定星期；鬧鐘與計時器都可顯示自訂文字。
+7. 登入後自動啟動預設關閉，只在使用者勾選並明確同意後啟用；JSON 不會改變此設定。
+8. 要結束程式，從圖形右鍵或系統匣選「儲存並結束桌面拼格」。
 
 版面預設儲存於 %LOCALAPPDATA%\HexDesk，沿用舊版本位置。
 若已有程式使用相同資料目錄，會帶回既有視窗。要換新版，請先結束舊版。
 完整操作說明請看「使用說明.md」。Linux 版尚未開發。
+
+English: Extract the ZIP and run DeskTiles.exe. Choose English from the language selector in the upper-right corner. Your choice is remembered. Read UserGuide.en.md for instructions. Alarms default to Once and also support daily/weekly recurrence. Timers and alarms support custom text. Start at Windows sign-in is off by default and requires explicit user consent. Save and exit the old version before updating. No Python, .NET or development tools are required.
 '@ | Set-Content -LiteralPath (Join-Path $stagingApp 'README.txt') -Encoding utf8
 Write-Host '[打包 3/4] 壓縮只包含使用檔案的乾淨套件'
 Compress-Archive -LiteralPath $stagingApp -DestinationPath $archive -Force

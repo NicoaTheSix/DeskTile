@@ -1,4 +1,4 @@
-param([ValidateSet('Latest','HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe')][string]$ExecutableName = 'Latest')
+﻿param([ValidateSet('Latest','HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe')][string]$ExecutableName = 'Latest')
 $ErrorActionPreference = 'Stop'
 if ($ExecutableName -eq 'Latest') {
     $candidates = @('HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe') | ForEach-Object { Join-Path $PSScriptRoot ('build\' + $_) } | Where-Object { Test-Path -LiteralPath $_ }

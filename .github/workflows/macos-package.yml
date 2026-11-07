@@ -1,0 +1,51 @@
+name: macOS verified package
+on:
+  push:
+    branches: [update/modern-icon]
+    paths:
+      - 'DeskTile_mac/Sources/**'
+      - 'DeskTile_mac/assets/**'
+      - 'DeskTile_mac/*.sh'
+      - 'DeskTile_mac/Info.plist'
+      - 'DeskTile_mac/README.md'
+      - '.github/workflows/macos-package.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: macos-package-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Build Universal 2 app and ICNS
+        run: bash DeskTile_mac/build.sh
+      - name: Verify signed app, icons and AppKit
+        run: bash DeskTile_mac/verify.sh
+      - name: Package download
+        run: bash DeskTile_mac/package.sh
+      - name: Preserve verification logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-verification
+          path: |
+            DeskTile_mac/build/verification.*/smoke-result.txt
+            DeskTile_mac/build/verification.*/control.png
+          if-no-files-found: warn
+      - name: Commit verified package on this branch
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp DeskTile_mac/release/DeskTiles.app/Contents/Resources/DeskTiles.icns DeskTile_mac/assets/DeskTiles.icns
+          git add DeskTile_mac/assets/DeskTiles.icns DeskTile_mac/release/DeskTiles-macOS-universal.zip DeskTile_mac/release/SHA256SUMS.txt DeskTile_mac/release/使用說明.md
+          git diff --cached --quiet && exit 0
+          git commit -m "Package verified macOS app with rounded icon"
+          git push origin "HEAD:$TARGET_BRANCH"

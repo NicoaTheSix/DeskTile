@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "alarm.hpp"
 
 namespace hexdesk {
 constexpr double Width = 160.0;
@@ -18,7 +19,7 @@ constexpr double SnapDistance = 22.0;
 struct Point { double x = 0, y = 0; };
 inline Point operator+(Point a, Point b) { return {a.x + b.x, a.y + b.y}; }
 inline Point operator-(Point a, Point b) { return {a.x - b.x, a.y - b.y}; }
-enum class Kind { Text, Image, Timer };
+enum class Kind { Text, Image, Timer, Alarm };
 enum class Shape { Hexagon, Triangle, Rectangle };
 enum class BorderStyle { Solid, Pixel, Rgb, Breathing };
 struct Tile {
@@ -28,6 +29,7 @@ struct Tile {
     Shape shape = Shape::Hexagon;
     std::string text = "新文字";
     std::string image;
+    Alarm alarm;
     bool topmost = true;
     bool countdown = true;
     double duration = 300, elapsed = 0;
@@ -255,27 +257,30 @@ inline std::string Clock(const Tile& tile) {
     return out.str();
 }
 inline void Save(std::ostream& out, const std::vector<Tile>& tiles) {
-    out << "HEXDESK 5\n" << tiles.size() << '\n' << std::setprecision(17);
-    for (const auto& t:tiles)
+    out << "HEXDESK 6\n" << tiles.size() << '\n' << std::setprecision(17);
+    for (const auto& t:tiles) {
+        if(!ValidAlarm(t.alarm))throw std::runtime_error("鬧鐘資料無效");
         out << t.id << ' ' << t.position.x << ' ' << t.position.y << ' '
             << static_cast<int>(t.kind) << ' ' << t.topmost << ' ' << t.countdown << ' '
             << t.duration << ' ' << t.elapsed << ' ' << std::quoted(t.text) << ' '
             << std::quoted(t.image) << ' ' << static_cast<int>(t.borderStyle) << ' ' << t.borderColor
             << ' ' << t.borderWidth << ' ' << t.rgbCycleSeconds << ' ' << t.rgbAnimated
             << ' ' << t.size << ' ' << std::quoted(t.fontFamily) << ' ' << t.fontSize << ' ' << t.textColor
-            << ' ' << t.backgroundColor << ' ' << t.backgroundTransparency << ' ' << static_cast<int>(t.shape) << '\n';
+            << ' ' << t.backgroundColor << ' ' << t.backgroundTransparency << ' ' << static_cast<int>(t.shape) << ' ' << static_cast<int>(t.alarm.repeat) << ' ' << t.alarm.minute
+            << ' ' << t.alarm.weekdays << ' ' << std::quoted(t.alarm.date) << ' ' << t.alarm.enabled << ' ' << t.alarm.lastFired << '\n';
+    }
     if (!out) throw std::runtime_error("寫入版面失敗");
 }
 inline std::vector<Tile> Load(std::istream& in) {
     std::string magic; int version=0; size_t count=0;
-    if (!(in>>magic>>version>>count) || magic!="HEXDESK" || version<1 || version>5 || count>500)
+    if (!(in>>magic>>version>>count) || magic!="HEXDESK" || version<1 || version>6 || count>500)
         throw std::runtime_error("不支援的版面格式，或格子超過 500 個");
     std::vector<Tile> result; std::set<int> ids;
     for (size_t i=0;i<count;++i) {
         Tile t; int kind=0, top=0, down=0;
         if (!(in>>t.id>>t.position.x>>t.position.y>>kind>>top>>down
               >>t.duration>>t.elapsed>>std::quoted(t.text)>>std::quoted(t.image)) ||
-            t.id<=0 || t.id>1000000 || !ids.insert(t.id).second || kind<0 || kind>2 ||
+            t.id<=0 || t.id>1000000 || !ids.insert(t.id).second || kind<0 || kind>(version>=6?3:2) ||
             (top!=0 && top!=1) || (down!=0 && down!=1) ||
             !std::isfinite(t.position.x) || !std::isfinite(t.position.y) ||
             std::abs(t.position.x)>1000000 || std::abs(t.position.y)>1000000 ||
@@ -307,6 +312,13 @@ inline std::vector<Tile> Load(std::istream& in) {
         if(version>=5) {
             int shape=0;if(!(in>>shape) || shape<0 || shape>2)throw std::runtime_error("圖形資料損壞，已保留原始檔案");
             t.shape=static_cast<Shape>(shape);
+        }
+        if(version>=6) {
+            int repeat=0,enabled=0;
+            if(!(in>>repeat>>t.alarm.minute>>t.alarm.weekdays>>std::quoted(t.alarm.date)>>enabled>>t.alarm.lastFired)||
+                repeat<0||repeat>2||(enabled!=0&&enabled!=1))throw std::runtime_error("鬧鐘資料無效");
+            t.alarm.repeat=static_cast<AlarmRepeat>(repeat);t.alarm.enabled=enabled!=0;
+            if(!ValidAlarm(t.alarm))throw std::runtime_error("鬧鐘資料無效");
         }
         if (t.countdown) t.elapsed=std::min(t.elapsed,t.duration);
         t.notified=t.countdown && t.elapsed>=t.duration;
