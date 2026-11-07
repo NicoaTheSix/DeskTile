@@ -5,8 +5,12 @@
     "path": "D:\\DeskTile\\.gitattributes",
     "kind": ".gitattributes",
     "action": "modified",
-    "size_bytes": 104,
-    "sha256": "AE2B991F31643253A7F4BE28E352DCE6FBDA483A199F0459367257A9851DA08C"
+    "size_bytes": 107,
+    "sha256": "0F445D02D36F1E4F60759B7543525DCB981A5145D48C16A3D271DA2B1F7C0BCD",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\.gitattributes",
+    "source_sha256": "AE2B991F31643253A7F4BE28E352DCE6FBDA483A199F0459367257A9851DA08C",
+    "source_size_bytes": 104,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "macos-package.yml",
@@ -15,7 +19,11 @@
     "kind": ".yml",
     "action": "created",
     "size_bytes": 1894,
-    "sha256": "3028CBBB8631DF862FBCC99D18E5C9E4EDEA6655CCF1B465C933611AFC2221CC"
+    "sha256": "3028CBBB8631DF862FBCC99D18E5C9E4EDEA6655CCF1B465C933611AFC2221CC",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\.github\\workflows\\macos-package.yml",
+    "source_sha256": "3028CBBB8631DF862FBCC99D18E5C9E4EDEA6655CCF1B465C933611AFC2221CC",
+    "source_size_bytes": 1894,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "alarm.hpp",
@@ -24,7 +32,11 @@
     "kind": ".hpp",
     "action": "created",
     "size_bytes": 5325,
-    "sha256": "E8FD42444208DB8E4B5A2EC6BC9413DA16F580235CBC96E95D46D801FA0C3E30"
+    "sha256": "E8FD42444208DB8E4B5A2EC6BC9413DA16F580235CBC96E95D46D801FA0C3E30",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\alarm.hpp",
+    "source_sha256": "E8FD42444208DB8E4B5A2EC6BC9413DA16F580235CBC96E95D46D801FA0C3E30",
+    "source_size_bytes": 5325,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "build-logo.ps1",
@@ -32,8 +44,12 @@
     "path": "D:\\DeskTile\\assets\\build-logo.ps1",
     "kind": ".ps1",
     "action": "modified",
-    "size_bytes": 4651,
-    "sha256": "5BB78CB66DC3132F6B806CD5B90CF33B7ADAD2448D6CEFB259C3DBFCDCA58DD6"
+    "size_bytes": 4747,
+    "sha256": "059F2D7CE1697FD70897EA47FBF62CA1329CA072452066238BD8FE34AB35D794",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\assets\\build-logo.ps1",
+    "source_sha256": "5BB78CB66DC3132F6B806CD5B90CF33B7ADAD2448D6CEFB259C3DBFCDCA58DD6",
+    "source_size_bytes": 4651,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles-logo.png",
@@ -42,7 +58,11 @@
     "kind": ".png",
     "action": "modified",
     "size_bytes": 35111,
-    "sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9"
+    "sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\assets\\DeskTiles-logo.png",
+    "source_sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9",
+    "source_size_bytes": 35111,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles.ico",
@@ -51,7 +71,11 @@
     "kind": ".ico",
     "action": "modified",
     "size_bytes": 16933,
-    "sha256": "B0F9C9457EF733A397BF010F0D23D60D4CDE1832A2B5E3F6087702DD237AFB46"
+    "sha256": "B0F9C9457EF733A397BF010F0D23D60D4CDE1832A2B5E3F6087702DD237AFB46",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\assets\\DeskTiles.ico",
+    "source_sha256": "B0F9C9457EF733A397BF010F0D23D60D4CDE1832A2B5E3F6087702DD237AFB46",
+    "source_size_bytes": 16933,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles.svg",
@@ -59,8 +83,12 @@
     "path": "D:\\DeskTile\\assets\\DeskTiles.svg",
     "kind": ".svg",
     "action": "modified",
-    "size_bytes": 1383,
-    "sha256": "35C679617F1C6CFE08B935E2477B0BC306CB8E00390E4C38AAE04349413A9330"
+    "size_bytes": 1393,
+    "sha256": "B0D32D0BBEAD92EDFC490DC1FF9DD71651E3CBDAA6A4117D02614AD1D07228CF",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\assets\\DeskTiles.svg",
+    "source_sha256": "35C679617F1C6CFE08B935E2477B0BC306CB8E00390E4C38AAE04349413A9330",
+    "source_size_bytes": 1383,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "README.md",
@@ -68,8 +96,12 @@
     "path": "D:\\DeskTile\\assets\\README.md",
     "kind": ".md",
     "action": "modified",
-    "size_bytes": 1525,
-    "sha256": "E90E61DF09483E1CEA875172AA799CB5CBF8A454D9BA83D5192E389A883C00F4"
+    "size_bytes": 1545,
+    "sha256": "B0A44C25B4C725227D55371939CDC4A0EF74B05FBC9C03548641D898512F1196",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\assets\\README.md",
+    "source_sha256": "E90E61DF09483E1CEA875172AA799CB5CBF8A454D9BA83D5192E389A883C00F4",
+    "source_size_bytes": 1525,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "build.ps1",
@@ -78,7 +110,11 @@
     "kind": ".ps1",
     "action": "modified",
     "size_bytes": 4549,
-    "sha256": "762FB0F8BBA656E135A65E6DDC675E6DAA93B384E6528710CD2B54B493386EF9"
+    "sha256": "762FB0F8BBA656E135A65E6DDC675E6DAA93B384E6528710CD2B54B493386EF9",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\build.ps1",
+    "source_sha256": "762FB0F8BBA656E135A65E6DDC675E6DAA93B384E6528710CD2B54B493386EF9",
+    "source_size_bytes": 4549,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "config.hpp",
@@ -87,7 +123,11 @@
     "kind": ".hpp",
     "action": "modified",
     "size_bytes": 12756,
-    "sha256": "2008F2149B3BD3C827C528C878E8A4910D0932078FC11444EFE2393430035E69"
+    "sha256": "2008F2149B3BD3C827C528C878E8A4910D0932078FC11444EFE2393430035E69",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\config.hpp",
+    "source_sha256": "2008F2149B3BD3C827C528C878E8A4910D0932078FC11444EFE2393430035E69",
+    "source_size_bytes": 12756,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "core.hpp",
@@ -96,7 +136,11 @@
     "kind": ".hpp",
     "action": "modified",
     "size_bytes": 18899,
-    "sha256": "07173CF393BB8A345F536208B1DDD04477FC77DE89FC7C03D7ECC67D42693FCA"
+    "sha256": "07173CF393BB8A345F536208B1DDD04477FC77DE89FC7C03D7ECC67D42693FCA",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\core.hpp",
+    "source_sha256": "07173CF393BB8A345F536208B1DDD04477FC77DE89FC7C03D7ECC67D42693FCA",
+    "source_size_bytes": 18899,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles-logo.png",
@@ -105,7 +149,11 @@
     "kind": ".png",
     "action": "created",
     "size_bytes": 35111,
-    "sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9"
+    "sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\assets\\DeskTiles-logo.png",
+    "source_sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9",
+    "source_size_bytes": 35111,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles.icns",
@@ -114,7 +162,11 @@
     "kind": ".icns",
     "action": "created",
     "size_bytes": 125437,
-    "sha256": "C260C56912B18BC156CB59CFF30C565FCDD1C54AA0EEB1EC1895586A9E19AD43"
+    "sha256": "C260C56912B18BC156CB59CFF30C565FCDD1C54AA0EEB1EC1895586A9E19AD43",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\assets\\DeskTiles.icns",
+    "source_sha256": "C260C56912B18BC156CB59CFF30C565FCDD1C54AA0EEB1EC1895586A9E19AD43",
+    "source_size_bytes": 125437,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles.svg",
@@ -122,8 +174,12 @@
     "path": "D:\\DeskTile\\DeskTile_mac\\assets\\DeskTiles.svg",
     "kind": ".svg",
     "action": "modified",
-    "size_bytes": 1383,
-    "sha256": "35C679617F1C6CFE08B935E2477B0BC306CB8E00390E4C38AAE04349413A9330"
+    "size_bytes": 1393,
+    "sha256": "B0D32D0BBEAD92EDFC490DC1FF9DD71651E3CBDAA6A4117D02614AD1D07228CF",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\assets\\DeskTiles.svg",
+    "source_sha256": "35C679617F1C6CFE08B935E2477B0BC306CB8E00390E4C38AAE04349413A9330",
+    "source_size_bytes": 1383,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "build.sh",
@@ -132,7 +188,11 @@
     "kind": ".sh",
     "action": "modified",
     "size_bytes": 1655,
-    "sha256": "F0F7333773BF3FB61FEE4AA124EABD5EC026310B33DD13765733CC452D6FDD98"
+    "sha256": "F0F7333773BF3FB61FEE4AA124EABD5EC026310B33DD13765733CC452D6FDD98",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\build.sh",
+    "source_sha256": "F0F7333773BF3FB61FEE4AA124EABD5EC026310B33DD13765733CC452D6FDD98",
+    "source_size_bytes": 1655,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "Info.plist",
@@ -140,8 +200,12 @@
     "path": "D:\\DeskTile\\DeskTile_mac\\Info.plist",
     "kind": ".plist",
     "action": "modified",
-    "size_bytes": 764,
-    "sha256": "81104978D65A7E36E73590ED05318AED8649B464F5FE944AC90A6F18D88441FE"
+    "size_bytes": 765,
+    "sha256": "505FCC493B24706C91B8490E255125C131E30C86D2901E9E23D62C20ED71AB93",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\Info.plist",
+    "source_sha256": "81104978D65A7E36E73590ED05318AED8649B464F5FE944AC90A6F18D88441FE",
+    "source_size_bytes": 764,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "package.sh",
@@ -150,7 +214,11 @@
     "kind": ".sh",
     "action": "modified",
     "size_bytes": 862,
-    "sha256": "46CE7D39B793E7C5D0E5DFF91B65D5096DF2BD14805A55F96805B0F2B0E01BD6"
+    "sha256": "46CE7D39B793E7C5D0E5DFF91B65D5096DF2BD14805A55F96805B0F2B0E01BD6",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\package.sh",
+    "source_sha256": "46CE7D39B793E7C5D0E5DFF91B65D5096DF2BD14805A55F96805B0F2B0E01BD6",
+    "source_size_bytes": 862,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "README.md",
@@ -158,8 +226,12 @@
     "path": "D:\\DeskTile\\DeskTile_mac\\README.md",
     "kind": ".md",
     "action": "modified",
-    "size_bytes": 5448,
-    "sha256": "ECAAD498FDA5680720AE13BE14E5A7FA58BA29CCFC095877FC1A6F63BDBC1657"
+    "size_bytes": 5454,
+    "sha256": "CABADBCEB12B5154C9E479F8F61486AB02B7A4AFE1ED7E59B4F8C80651B0CBE7",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\README.md",
+    "source_sha256": "ECAAD498FDA5680720AE13BE14E5A7FA58BA29CCFC095877FC1A6F63BDBC1657",
+    "source_size_bytes": 5448,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles-macOS-universal.zip",
@@ -168,7 +240,11 @@
     "kind": ".zip",
     "action": "modified",
     "size_bytes": 425519,
-    "sha256": "9A4182F469863228F3B63F5899C2BA3FB269541632D4849C3447E7672EFA7032"
+    "sha256": "9A4182F469863228F3B63F5899C2BA3FB269541632D4849C3447E7672EFA7032",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\release\\DeskTiles-macOS-universal.zip",
+    "source_sha256": "9A4182F469863228F3B63F5899C2BA3FB269541632D4849C3447E7672EFA7032",
+    "source_size_bytes": 425519,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "SHA256SUMS.txt",
@@ -177,7 +253,11 @@
     "kind": ".txt",
     "action": "modified",
     "size_bytes": 97,
-    "sha256": "E1EEF757227D1EF5D82FCC156B9E9269A604484B7BFB3ADE93C060D3F88AE2FF"
+    "sha256": "E1EEF757227D1EF5D82FCC156B9E9269A604484B7BFB3ADE93C060D3F88AE2FF",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\release\\SHA256SUMS.txt",
+    "source_sha256": "E1EEF757227D1EF5D82FCC156B9E9269A604484B7BFB3ADE93C060D3F88AE2FF",
+    "source_size_bytes": 97,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "使用說明.md",
@@ -186,7 +266,11 @@
     "kind": ".md",
     "action": "modified",
     "size_bytes": 5454,
-    "sha256": "CABADBCEB12B5154C9E479F8F61486AB02B7A4AFE1ED7E59B4F8C80651B0CBE7"
+    "sha256": "CABADBCEB12B5154C9E479F8F61486AB02B7A4AFE1ED7E59B4F8C80651B0CBE7",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\release\\使用說明.md",
+    "source_sha256": "CABADBCEB12B5154C9E479F8F61486AB02B7A4AFE1ED7E59B4F8C80651B0CBE7",
+    "source_size_bytes": 5454,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "main.mm",
@@ -194,8 +278,12 @@
     "path": "D:\\DeskTile\\DeskTile_mac\\Sources\\main.mm",
     "kind": ".mm",
     "action": "modified",
-    "size_bytes": 36988,
-    "sha256": "0AB461A86B74E549B53CE550DEAF564CD3553D01C79D54B8B040B4135A3CA13F"
+    "size_bytes": 36989,
+    "sha256": "C2F61DF861A85171C56B66A0CC6754D75A64746115C7DC44362814E23053FB85",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\Sources\\main.mm",
+    "source_sha256": "0AB461A86B74E549B53CE550DEAF564CD3553D01C79D54B8B040B4135A3CA13F",
+    "source_size_bytes": 36988,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify.sh",
@@ -204,7 +292,11 @@
     "kind": ".sh",
     "action": "modified",
     "size_bytes": 1074,
-    "sha256": "705D2CC477779C443098D2FD777431B96EA15A3870BBC06550B0C580B5AC9018"
+    "sha256": "705D2CC477779C443098D2FD777431B96EA15A3870BBC06550B0C580B5AC9018",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTile_mac\\verify.sh",
+    "source_sha256": "705D2CC477779C443098D2FD777431B96EA15A3870BBC06550B0C580B5AC9018",
+    "source_size_bytes": 1074,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles.rc",
@@ -212,8 +304,12 @@
     "path": "D:\\DeskTile\\DeskTiles.rc",
     "kind": ".rc",
     "action": "modified",
-    "size_bytes": 617,
-    "sha256": "022B21AD86A8B43B9182C8C444F6C624B9385F28A1C2EED4F7731DDD2F20AEE7"
+    "size_bytes": 646,
+    "sha256": "AC4141D3B4FC404A8723905A898AF902FCD8B872D091EEE92AF485094E2D60DA",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\DeskTiles.rc",
+    "source_sha256": "022B21AD86A8B43B9182C8C444F6C624B9385F28A1C2EED4F7731DDD2F20AEE7",
+    "source_size_bytes": 617,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "alarm-en.png",
@@ -222,7 +318,11 @@
     "kind": ".png",
     "action": "created",
     "size_bytes": 22290,
-    "sha256": "0140715AEB14FC3380D4932CDC20B6AC7313B0D8D27D6E314B83C5C3A094BCC1"
+    "sha256": "0140715AEB14FC3380D4932CDC20B6AC7313B0D8D27D6E314B83C5C3A094BCC1",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\alarm-en.png",
+    "source_sha256": "0140715AEB14FC3380D4932CDC20B6AC7313B0D8D27D6E314B83C5C3A094BCC1",
+    "source_size_bytes": 22290,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "alarm.png",
@@ -231,7 +331,11 @@
     "kind": ".png",
     "action": "created",
     "size_bytes": 26543,
-    "sha256": "DF0E2974CBB042F5509DE3BA9A6109386C018E9BAF1C57E535A79F72A9858DE8"
+    "sha256": "DF0E2974CBB042F5509DE3BA9A6109386C018E9BAF1C57E535A79F72A9858DE8",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\alarm.png",
+    "source_sha256": "DF0E2974CBB042F5509DE3BA9A6109386C018E9BAF1C57E535A79F72A9858DE8",
+    "source_size_bytes": 26543,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "control-en.png",
@@ -240,7 +344,11 @@
     "kind": ".png",
     "action": "created",
     "size_bytes": 47464,
-    "sha256": "60B442532DEE7B4DDB88492B3BAEA8E968D691585A3D16C6998E7BCA49963563"
+    "sha256": "60B442532DEE7B4DDB88492B3BAEA8E968D691585A3D16C6998E7BCA49963563",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\control-en.png",
+    "source_sha256": "60B442532DEE7B4DDB88492B3BAEA8E968D691585A3D16C6998E7BCA49963563",
+    "source_size_bytes": 47464,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "control.png",
@@ -249,7 +357,11 @@
     "kind": ".png",
     "action": "modified",
     "size_bytes": 50195,
-    "sha256": "8551E03714F777FDB2FAC2596FF45408D913C021D23C69F1E09B6D15011F8033"
+    "sha256": "8551E03714F777FDB2FAC2596FF45408D913C021D23C69F1E09B6D15011F8033",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\control.png",
+    "source_sha256": "8551E03714F777FDB2FAC2596FF45408D913C021D23C69F1E09B6D15011F8033",
+    "source_size_bytes": 50195,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "icon-update-delivery.md",
@@ -257,8 +369,12 @@
     "path": "D:\\DeskTile\\docs\\icon-update-delivery.md",
     "kind": ".md",
     "action": "created",
-    "size_bytes": 3332,
-    "sha256": "6BE8F40B2C369192BA748D0FA3EED68FC01C225E79071C1B0A701356819C8ED7"
+    "size_bytes": 3369,
+    "sha256": "3E73870CF7137FA58C8DCFCD55437115081F5038CCCE09EDD1FD313CB6ED2E18",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\icon-update-delivery.md",
+    "source_sha256": "6BE8F40B2C369192BA748D0FA3EED68FC01C225E79071C1B0A701356819C8ED7",
+    "source_size_bytes": 3332,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "reminder.png",
@@ -267,7 +383,11 @@
     "kind": ".png",
     "action": "created",
     "size_bytes": 7400,
-    "sha256": "14C4C1DF19EEA06EDCB9578E60678643D7F9FCEE67EB4EDE8BCCFFDB1E0F4B78"
+    "sha256": "14C4C1DF19EEA06EDCB9578E60678643D7F9FCEE67EB4EDE8BCCFFDB1E0F4B78",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\reminder.png",
+    "source_sha256": "14C4C1DF19EEA06EDCB9578E60678643D7F9FCEE67EB4EDE8BCCFFDB1E0F4B78",
+    "source_size_bytes": 7400,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "startup-consent.png",
@@ -276,7 +396,11 @@
     "kind": ".png",
     "action": "created",
     "size_bytes": 22160,
-    "sha256": "BA544E9506B359FCA518D59AB7702657597C1ED28F82A9723FFAB34E4839649A"
+    "sha256": "BA544E9506B359FCA518D59AB7702657597C1ED28F82A9723FFAB34E4839649A",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\startup-consent.png",
+    "source_sha256": "BA544E9506B359FCA518D59AB7702657597C1ED28F82A9723FFAB34E4839649A",
+    "source_size_bytes": 22160,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "UserGuide.en.md",
@@ -285,7 +409,11 @@
     "kind": ".md",
     "action": "created",
     "size_bytes": 7658,
-    "sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E"
+    "sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\UserGuide.en.md",
+    "source_sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E",
+    "source_size_bytes": 7658,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "使用說明.md",
@@ -294,7 +422,11 @@
     "kind": ".md",
     "action": "modified",
     "size_bytes": 9487,
-    "sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A"
+    "sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\使用說明.md",
+    "source_sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A",
+    "source_size_bytes": 9487,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "網站上架交接.md",
@@ -302,8 +434,12 @@
     "path": "D:\\DeskTile\\docs\\網站上架交接.md",
     "kind": ".md",
     "action": "modified",
-    "size_bytes": 7422,
-    "sha256": "45F2AF6D721AEE89C981D794152E4F7DE55064013FB265D0FBC07C520652E3A0"
+    "size_bytes": 7442,
+    "sha256": "B94098897C7D99B1E438F34A42FAF5F11E3C6222EC41A974172A0EA23B0C4F49",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\網站上架交接.md",
+    "source_sha256": "45F2AF6D721AEE89C981D794152E4F7DE55064013FB265D0FBC07C520652E3A0",
+    "source_size_bytes": 7422,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "驗證摘要.txt",
@@ -311,8 +447,12 @@
     "path": "D:\\DeskTile\\docs\\驗證摘要.txt",
     "kind": ".txt",
     "action": "modified",
-    "size_bytes": 4326,
-    "sha256": "33888BEA09ACD25466F32891588A55CEE3B0AB474B1258DF34E5F616CDF38F38"
+    "size_bytes": 4328,
+    "sha256": "8172F5B8A9321C39EFA350D9793C79697822A507817F8095FE5EF833BB00FDD1",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\docs\\驗證摘要.txt",
+    "source_sha256": "33888BEA09ACD25466F32891588A55CEE3B0AB474B1258DF34E5F616CDF38F38",
+    "source_size_bytes": 4326,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "localization.hpp",
@@ -321,7 +461,11 @@
     "kind": ".hpp",
     "action": "created",
     "size_bytes": 26862,
-    "sha256": "E50D830AD8F951CD38F6D75C2C2240C747B60CA09E33B62CCAFC797FE77E11FE"
+    "sha256": "E50D830AD8F951CD38F6D75C2C2240C747B60CA09E33B62CCAFC797FE77E11FE",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\localization.hpp",
+    "source_sha256": "E50D830AD8F951CD38F6D75C2C2240C747B60CA09E33B62CCAFC797FE77E11FE",
+    "source_size_bytes": 26862,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "package.ps1",
@@ -330,7 +474,11 @@
     "kind": ".ps1",
     "action": "modified",
     "size_bytes": 4895,
-    "sha256": "FAA8BFA741FC8D02D16151C3C504F7A59F5DF7F8385C0149D9775AE3A47269E3"
+    "sha256": "FAA8BFA741FC8D02D16151C3C504F7A59F5DF7F8385C0149D9775AE3A47269E3",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\package.ps1",
+    "source_sha256": "FAA8BFA741FC8D02D16151C3C504F7A59F5DF7F8385C0149D9775AE3A47269E3",
+    "source_size_bytes": 4895,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "README.md",
@@ -338,8 +486,12 @@
     "path": "D:\\DeskTile\\README.md",
     "kind": ".md",
     "action": "modified",
-    "size_bytes": 21976,
-    "sha256": "358EF85736E09239AB6798BA61755E4AA2DB2A04F302250C7867959BABF8F014"
+    "size_bytes": 21990,
+    "sha256": "A1C828845516031145AEC90661392892547E2989D7AA77B7A21E1240E5150174",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\README.md",
+    "source_sha256": "358EF85736E09239AB6798BA61755E4AA2DB2A04F302250C7867959BABF8F014",
+    "source_size_bytes": 21976,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles-Windows-x64.zip",
@@ -348,7 +500,11 @@
     "kind": ".zip",
     "action": "modified",
     "size_bytes": 504041,
-    "sha256": "507C4B6DC30CA8D50418D4EE83A60847E0CBC3CDBB04B31CB328D4A9FC0FD79E"
+    "sha256": "507C4B6DC30CA8D50418D4EE83A60847E0CBC3CDBB04B31CB328D4A9FC0FD79E",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\release\\DeskTiles-Windows-x64.zip",
+    "source_sha256": "507C4B6DC30CA8D50418D4EE83A60847E0CBC3CDBB04B31CB328D4A9FC0FD79E",
+    "source_size_bytes": 504041,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "DeskTiles.exe",
@@ -357,7 +513,11 @@
     "kind": ".exe",
     "action": "modified",
     "size_bytes": 1068032,
-    "sha256": "DC69FBB53EA3454954B0140983D48227F0F21A7AA7D857AFE4002FF093A90606"
+    "sha256": "DC69FBB53EA3454954B0140983D48227F0F21A7AA7D857AFE4002FF093A90606",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\release\\DeskTiles\\DeskTiles.exe",
+    "source_sha256": "DC69FBB53EA3454954B0140983D48227F0F21A7AA7D857AFE4002FF093A90606",
+    "source_size_bytes": 1068032,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "README.txt",
@@ -366,7 +526,11 @@
     "kind": ".txt",
     "action": "modified",
     "size_bytes": 1492,
-    "sha256": "5AFF6CC447FEBC5C4FD77995C71A599FA7377BD9BE3AE171183562CDD4C978FF"
+    "sha256": "5AFF6CC447FEBC5C4FD77995C71A599FA7377BD9BE3AE171183562CDD4C978FF",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\release\\DeskTiles\\README.txt",
+    "source_sha256": "5AFF6CC447FEBC5C4FD77995C71A599FA7377BD9BE3AE171183562CDD4C978FF",
+    "source_size_bytes": 1492,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "UserGuide.en.md",
@@ -375,7 +539,11 @@
     "kind": ".md",
     "action": "created",
     "size_bytes": 7658,
-    "sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E"
+    "sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\release\\DeskTiles\\UserGuide.en.md",
+    "source_sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E",
+    "source_size_bytes": 7658,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "使用說明.md",
@@ -384,7 +552,11 @@
     "kind": ".md",
     "action": "modified",
     "size_bytes": 9487,
-    "sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A"
+    "sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\release\\DeskTiles\\使用說明.md",
+    "source_sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A",
+    "source_size_bytes": 9487,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "SHA256SUMS.txt",
@@ -393,7 +565,11 @@
     "kind": ".txt",
     "action": "modified",
     "size_bytes": 184,
-    "sha256": "EBE077A29C5950B87B3CDDA60EA238CA46264CB96B84F934388631576E9CF0E1"
+    "sha256": "EBE077A29C5950B87B3CDDA60EA238CA46264CB96B84F934388631576E9CF0E1",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\release\\SHA256SUMS.txt",
+    "source_sha256": "EBE077A29C5950B87B3CDDA60EA238CA46264CB96B84F934388631576E9CF0E1",
+    "source_size_bytes": 184,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "run.ps1",
@@ -402,7 +578,11 @@
     "kind": ".ps1",
     "action": "modified",
     "size_bytes": 1547,
-    "sha256": "7C33B210E49E78479F915D6ACF437BFEAD70840C5203EB371FB539ACF0D31799"
+    "sha256": "7C33B210E49E78479F915D6ACF437BFEAD70840C5203EB371FB539ACF0D31799",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\run.ps1",
+    "source_sha256": "7C33B210E49E78479F915D6ACF437BFEAD70840C5203EB371FB539ACF0D31799",
+    "source_size_bytes": 1547,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "startup.hpp",
@@ -410,8 +590,12 @@
     "path": "D:\\DeskTile\\startup.hpp",
     "kind": ".hpp",
     "action": "created",
-    "size_bytes": 1082,
-    "sha256": "600B7E54BD626D1F61190DEA46826DBDE6CEB55DB5DCDACA6132B298C4C62B12"
+    "size_bytes": 1101,
+    "sha256": "B10586BB272FDBBB6741ED26C7E8136B98BD94D7331656040F5C25429DE8D809",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\startup.hpp",
+    "source_sha256": "600B7E54BD626D1F61190DEA46826DBDE6CEB55DB5DCDACA6132B298C4C62B12",
+    "source_size_bytes": 1082,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "tests.cpp",
@@ -420,7 +604,11 @@
     "kind": ".cpp",
     "action": "modified",
     "size_bytes": 28326,
-    "sha256": "955B7ACBAFE3EEFDB187A3AF63978C92C02C6A28E73BCF6D79BB58FE05DEFAF0"
+    "sha256": "955B7ACBAFE3EEFDB187A3AF63978C92C02C6A28E73BCF6D79BB58FE05DEFAF0",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\tests.cpp",
+    "source_sha256": "955B7ACBAFE3EEFDB187A3AF63978C92C02C6A28E73BCF6D79BB58FE05DEFAF0",
+    "source_size_bytes": 28326,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-activation.ps1",
@@ -429,7 +617,11 @@
     "kind": ".ps1",
     "action": "modified",
     "size_bytes": 4787,
-    "sha256": "D18287C42B2C4031DB49D2A594DE12A9D5C6226A5B83C386857C9C98C054EBD2"
+    "sha256": "D18287C42B2C4031DB49D2A594DE12A9D5C6226A5B83C386857C9C98C054EBD2",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-activation.ps1",
+    "source_sha256": "D18287C42B2C4031DB49D2A594DE12A9D5C6226A5B83C386857C9C98C054EBD2",
+    "source_size_bytes": 4787,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-composition.ps1",
@@ -438,7 +630,11 @@
     "kind": ".ps1",
     "action": "created",
     "size_bytes": 1874,
-    "sha256": "5E14785854C3A7E321B254E14048E20C5630FACBDC55860D386B869BEA6090F3"
+    "sha256": "5E14785854C3A7E321B254E14048E20C5630FACBDC55860D386B869BEA6090F3",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-composition.ps1",
+    "source_sha256": "5E14785854C3A7E321B254E14048E20C5630FACBDC55860D386B869BEA6090F3",
+    "source_size_bytes": 1874,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-composition.py",
@@ -447,7 +643,11 @@
     "kind": ".py",
     "action": "created",
     "size_bytes": 15265,
-    "sha256": "9B63CEDE8AD92FD7924799C4D8A8ADC6ED251C7A13B763EB9F41529165BBE548"
+    "sha256": "9B63CEDE8AD92FD7924799C4D8A8ADC6ED251C7A13B763EB9F41529165BBE548",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-composition.py",
+    "source_sha256": "9B63CEDE8AD92FD7924799C4D8A8ADC6ED251C7A13B763EB9F41529165BBE548",
+    "source_size_bytes": 15265,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-consent.py",
@@ -456,7 +656,11 @@
     "kind": ".py",
     "action": "created",
     "size_bytes": 6953,
-    "sha256": "463DA37C9D98AD1BD656F2C7DBE86F994C6065F43748288746049DAF2488486D"
+    "sha256": "463DA37C9D98AD1BD656F2C7DBE86F994C6065F43748288746049DAF2488486D",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-consent.py",
+    "source_sha256": "463DA37C9D98AD1BD656F2C7DBE86F994C6065F43748288746049DAF2488486D",
+    "source_size_bytes": 6953,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-features.ps1",
@@ -465,7 +669,11 @@
     "kind": ".ps1",
     "action": "created",
     "size_bytes": 1839,
-    "sha256": "8BC3E278CC8E349DE53C8A41C8BAC86B73882146F0EA281A6C42040506BF51A0"
+    "sha256": "8BC3E278CC8E349DE53C8A41C8BAC86B73882146F0EA281A6C42040506BF51A0",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-features.ps1",
+    "source_sha256": "8BC3E278CC8E349DE53C8A41C8BAC86B73882146F0EA281A6C42040506BF51A0",
+    "source_size_bytes": 1839,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-icons.ps1",
@@ -473,8 +681,12 @@
     "path": "D:\\DeskTile\\verify-icons.ps1",
     "kind": ".ps1",
     "action": "created",
-    "size_bytes": 4334,
-    "sha256": "668292D1E4C9D4C7FAF33F6FB09DC12EC3558ADD8EA275A062C7285669D117E5"
+    "size_bytes": 4408,
+    "sha256": "3E0C6529CA85F6F09C6532CE88F8E02F5D102E6A7DF9F58A5A11F8448D6146DD",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-icons.ps1",
+    "source_sha256": "668292D1E4C9D4C7FAF33F6FB09DC12EC3558ADD8EA275A062C7285669D117E5",
+    "source_size_bytes": 4334,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-interaction.ps1",
@@ -482,8 +694,12 @@
     "path": "D:\\DeskTile\\verify-interaction.ps1",
     "kind": ".ps1",
     "action": "created",
-    "size_bytes": 920,
-    "sha256": "FB84AD0F3A8A4FE22836B040BF0C3355E701985C507F71B6E715E67DE869CF6C"
+    "size_bytes": 931,
+    "sha256": "E7A71C8DC52EE4EAD74D53833CCCC83151797792792DEB50586F7AD7EFBF60E7",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-interaction.ps1",
+    "source_sha256": "FB84AD0F3A8A4FE22836B040BF0C3355E701985C507F71B6E715E67DE869CF6C",
+    "source_size_bytes": 920,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-language.ps1",
@@ -491,8 +707,12 @@
     "path": "D:\\DeskTile\\verify-language.ps1",
     "kind": ".ps1",
     "action": "created",
-    "size_bytes": 6986,
-    "sha256": "330C35483A64BE7FE7659BDCE8E4185CFCD04A8FA596C2BDCE2372A11835B5A0"
+    "size_bytes": 7076,
+    "sha256": "38AE20FE033454524DADBCC3CE203A8D5C55C61823D5BF5A0311CC1695FAA54A",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-language.ps1",
+    "source_sha256": "330C35483A64BE7FE7659BDCE8E4185CFCD04A8FA596C2BDCE2372A11835B5A0",
+    "source_size_bytes": 6986,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify-package.ps1",
@@ -500,8 +720,12 @@
     "path": "D:\\DeskTile\\verify-package.ps1",
     "kind": ".ps1",
     "action": "modified",
-    "size_bytes": 2560,
-    "sha256": "35B483EE3DE9C51992D1D709F2D05202F58C1689D59C02B24FADEEB48FFE8720"
+    "size_bytes": 2561,
+    "sha256": "455295E57234C45848922BCBFE5666FD6E9F4C758176EE660E140CE5AF908E2F",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify-package.ps1",
+    "source_sha256": "35B483EE3DE9C51992D1D709F2D05202F58C1689D59C02B24FADEEB48FFE8720",
+    "source_size_bytes": 2560,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "verify.ps1",
@@ -510,7 +734,11 @@
     "kind": ".ps1",
     "action": "modified",
     "size_bytes": 3590,
-    "sha256": "90EA17FD27131D5F9D05CFB6325D9796151AF1118D49ED1DB4B7C53FD4D12FE8"
+    "sha256": "90EA17FD27131D5F9D05CFB6325D9796151AF1118D49ED1DB4B7C53FD4D12FE8",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\verify.ps1",
+    "source_sha256": "90EA17FD27131D5F9D05CFB6325D9796151AF1118D49ED1DB4B7C53FD4D12FE8",
+    "source_size_bytes": 3590,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "VERSION",
@@ -518,8 +746,12 @@
     "path": "D:\\DeskTile\\VERSION",
     "kind": "",
     "action": "created",
-    "size_bytes": 6,
-    "sha256": "2941985EBF534F6541A7F87BCEBF276DE2D28C1B64E4BB762A831D2ACD8F9C8D"
+    "size_bytes": 7,
+    "sha256": "FDC060CE27679D48300FFA6ABFDCEE119CFDA212756514F6354B0B43E33D8AA4",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\VERSION",
+    "source_sha256": "2941985EBF534F6541A7F87BCEBF276DE2D28C1B64E4BB762A831D2ACD8F9C8D",
+    "source_size_bytes": 6,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "win32_features.hpp",
@@ -528,7 +760,11 @@
     "kind": ".hpp",
     "action": "created",
     "size_bytes": 13659,
-    "sha256": "C8130CA532EF31F39951DEE720595053EF32B0474F4B7067A23E8E5BBD1C6AAA"
+    "sha256": "C8130CA532EF31F39951DEE720595053EF32B0474F4B7067A23E8E5BBD1C6AAA",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\win32_features.hpp",
+    "source_sha256": "C8130CA532EF31F39951DEE720595053EF32B0474F4B7067A23E8E5BBD1C6AAA",
+    "source_size_bytes": 13659,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   },
   {
     "name": "win32.cpp",
@@ -537,6 +773,10 @@
     "kind": ".cpp",
     "action": "modified",
     "size_bytes": 180959,
-    "sha256": "FBA0FDF8D528A7DE6622EE865951B7F82A87B2B29BABA7CC8E4BAD013A1AD6A9"
+    "sha256": "FBA0FDF8D528A7DE6622EE865951B7F82A87B2B29BABA7CC8E4BAD013A1AD6A9",
+    "source_path": "D:\\DeskTile\\build\\icon-update\\win32.cpp",
+    "source_sha256": "FBA0FDF8D528A7DE6622EE865951B7F82A87B2B29BABA7CC8E4BAD013A1AD6A9",
+    "source_size_bytes": 180959,
+    "hash_basis": "path bytes after Git checkout; source_sha256 preserves build-worktree bytes before newline normalization"
   }
 ]
