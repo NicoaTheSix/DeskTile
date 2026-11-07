@@ -1,0 +1,542 @@
+[
+  {
+    "name": ".gitattributes",
+    "relative_path": ".gitattributes",
+    "path": "D:\\DeskTile\\.gitattributes",
+    "kind": ".gitattributes",
+    "action": "modified",
+    "size_bytes": 104,
+    "sha256": "AE2B991F31643253A7F4BE28E352DCE6FBDA483A199F0459367257A9851DA08C"
+  },
+  {
+    "name": "macos-package.yml",
+    "relative_path": ".github/workflows/macos-package.yml",
+    "path": "D:\\DeskTile\\.github\\workflows\\macos-package.yml",
+    "kind": ".yml",
+    "action": "created",
+    "size_bytes": 1894,
+    "sha256": "3028CBBB8631DF862FBCC99D18E5C9E4EDEA6655CCF1B465C933611AFC2221CC"
+  },
+  {
+    "name": "alarm.hpp",
+    "relative_path": "alarm.hpp",
+    "path": "D:\\DeskTile\\alarm.hpp",
+    "kind": ".hpp",
+    "action": "created",
+    "size_bytes": 5325,
+    "sha256": "E8FD42444208DB8E4B5A2EC6BC9413DA16F580235CBC96E95D46D801FA0C3E30"
+  },
+  {
+    "name": "build-logo.ps1",
+    "relative_path": "assets/build-logo.ps1",
+    "path": "D:\\DeskTile\\assets\\build-logo.ps1",
+    "kind": ".ps1",
+    "action": "modified",
+    "size_bytes": 4651,
+    "sha256": "5BB78CB66DC3132F6B806CD5B90CF33B7ADAD2448D6CEFB259C3DBFCDCA58DD6"
+  },
+  {
+    "name": "DeskTiles-logo.png",
+    "relative_path": "assets/DeskTiles-logo.png",
+    "path": "D:\\DeskTile\\assets\\DeskTiles-logo.png",
+    "kind": ".png",
+    "action": "modified",
+    "size_bytes": 35111,
+    "sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9"
+  },
+  {
+    "name": "DeskTiles.ico",
+    "relative_path": "assets/DeskTiles.ico",
+    "path": "D:\\DeskTile\\assets\\DeskTiles.ico",
+    "kind": ".ico",
+    "action": "modified",
+    "size_bytes": 16933,
+    "sha256": "B0F9C9457EF733A397BF010F0D23D60D4CDE1832A2B5E3F6087702DD237AFB46"
+  },
+  {
+    "name": "DeskTiles.svg",
+    "relative_path": "assets/DeskTiles.svg",
+    "path": "D:\\DeskTile\\assets\\DeskTiles.svg",
+    "kind": ".svg",
+    "action": "modified",
+    "size_bytes": 1383,
+    "sha256": "35C679617F1C6CFE08B935E2477B0BC306CB8E00390E4C38AAE04349413A9330"
+  },
+  {
+    "name": "README.md",
+    "relative_path": "assets/README.md",
+    "path": "D:\\DeskTile\\assets\\README.md",
+    "kind": ".md",
+    "action": "modified",
+    "size_bytes": 1525,
+    "sha256": "E90E61DF09483E1CEA875172AA799CB5CBF8A454D9BA83D5192E389A883C00F4"
+  },
+  {
+    "name": "build.ps1",
+    "relative_path": "build.ps1",
+    "path": "D:\\DeskTile\\build.ps1",
+    "kind": ".ps1",
+    "action": "modified",
+    "size_bytes": 4549,
+    "sha256": "762FB0F8BBA656E135A65E6DDC675E6DAA93B384E6528710CD2B54B493386EF9"
+  },
+  {
+    "name": "config.hpp",
+    "relative_path": "config.hpp",
+    "path": "D:\\DeskTile\\config.hpp",
+    "kind": ".hpp",
+    "action": "modified",
+    "size_bytes": 12756,
+    "sha256": "2008F2149B3BD3C827C528C878E8A4910D0932078FC11444EFE2393430035E69"
+  },
+  {
+    "name": "core.hpp",
+    "relative_path": "core.hpp",
+    "path": "D:\\DeskTile\\core.hpp",
+    "kind": ".hpp",
+    "action": "modified",
+    "size_bytes": 18899,
+    "sha256": "07173CF393BB8A345F536208B1DDD04477FC77DE89FC7C03D7ECC67D42693FCA"
+  },
+  {
+    "name": "DeskTiles-logo.png",
+    "relative_path": "DeskTile_mac/assets/DeskTiles-logo.png",
+    "path": "D:\\DeskTile\\DeskTile_mac\\assets\\DeskTiles-logo.png",
+    "kind": ".png",
+    "action": "created",
+    "size_bytes": 35111,
+    "sha256": "4F998F074F2B526AEF186E37B8FC79D373F13181C563D2792C2DC28E29065EE9"
+  },
+  {
+    "name": "DeskTiles.icns",
+    "relative_path": "DeskTile_mac/assets/DeskTiles.icns",
+    "path": "D:\\DeskTile\\DeskTile_mac\\assets\\DeskTiles.icns",
+    "kind": ".icns",
+    "action": "created",
+    "size_bytes": 125437,
+    "sha256": "C260C56912B18BC156CB59CFF30C565FCDD1C54AA0EEB1EC1895586A9E19AD43"
+  },
+  {
+    "name": "DeskTiles.svg",
+    "relative_path": "DeskTile_mac/assets/DeskTiles.svg",
+    "path": "D:\\DeskTile\\DeskTile_mac\\assets\\DeskTiles.svg",
+    "kind": ".svg",
+    "action": "modified",
+    "size_bytes": 1383,
+    "sha256": "35C679617F1C6CFE08B935E2477B0BC306CB8E00390E4C38AAE04349413A9330"
+  },
+  {
+    "name": "build.sh",
+    "relative_path": "DeskTile_mac/build.sh",
+    "path": "D:\\DeskTile\\DeskTile_mac\\build.sh",
+    "kind": ".sh",
+    "action": "modified",
+    "size_bytes": 1655,
+    "sha256": "F0F7333773BF3FB61FEE4AA124EABD5EC026310B33DD13765733CC452D6FDD98"
+  },
+  {
+    "name": "Info.plist",
+    "relative_path": "DeskTile_mac/Info.plist",
+    "path": "D:\\DeskTile\\DeskTile_mac\\Info.plist",
+    "kind": ".plist",
+    "action": "modified",
+    "size_bytes": 764,
+    "sha256": "81104978D65A7E36E73590ED05318AED8649B464F5FE944AC90A6F18D88441FE"
+  },
+  {
+    "name": "package.sh",
+    "relative_path": "DeskTile_mac/package.sh",
+    "path": "D:\\DeskTile\\DeskTile_mac\\package.sh",
+    "kind": ".sh",
+    "action": "modified",
+    "size_bytes": 862,
+    "sha256": "46CE7D39B793E7C5D0E5DFF91B65D5096DF2BD14805A55F96805B0F2B0E01BD6"
+  },
+  {
+    "name": "README.md",
+    "relative_path": "DeskTile_mac/README.md",
+    "path": "D:\\DeskTile\\DeskTile_mac\\README.md",
+    "kind": ".md",
+    "action": "modified",
+    "size_bytes": 5448,
+    "sha256": "ECAAD498FDA5680720AE13BE14E5A7FA58BA29CCFC095877FC1A6F63BDBC1657"
+  },
+  {
+    "name": "DeskTiles-macOS-universal.zip",
+    "relative_path": "DeskTile_mac/release/DeskTiles-macOS-universal.zip",
+    "path": "D:\\DeskTile\\DeskTile_mac\\release\\DeskTiles-macOS-universal.zip",
+    "kind": ".zip",
+    "action": "modified",
+    "size_bytes": 425519,
+    "sha256": "9A4182F469863228F3B63F5899C2BA3FB269541632D4849C3447E7672EFA7032"
+  },
+  {
+    "name": "SHA256SUMS.txt",
+    "relative_path": "DeskTile_mac/release/SHA256SUMS.txt",
+    "path": "D:\\DeskTile\\DeskTile_mac\\release\\SHA256SUMS.txt",
+    "kind": ".txt",
+    "action": "modified",
+    "size_bytes": 97,
+    "sha256": "E1EEF757227D1EF5D82FCC156B9E9269A604484B7BFB3ADE93C060D3F88AE2FF"
+  },
+  {
+    "name": "使用說明.md",
+    "relative_path": "DeskTile_mac/release/使用說明.md",
+    "path": "D:\\DeskTile\\DeskTile_mac\\release\\使用說明.md",
+    "kind": ".md",
+    "action": "modified",
+    "size_bytes": 5454,
+    "sha256": "CABADBCEB12B5154C9E479F8F61486AB02B7A4AFE1ED7E59B4F8C80651B0CBE7"
+  },
+  {
+    "name": "main.mm",
+    "relative_path": "DeskTile_mac/Sources/main.mm",
+    "path": "D:\\DeskTile\\DeskTile_mac\\Sources\\main.mm",
+    "kind": ".mm",
+    "action": "modified",
+    "size_bytes": 36988,
+    "sha256": "0AB461A86B74E549B53CE550DEAF564CD3553D01C79D54B8B040B4135A3CA13F"
+  },
+  {
+    "name": "verify.sh",
+    "relative_path": "DeskTile_mac/verify.sh",
+    "path": "D:\\DeskTile\\DeskTile_mac\\verify.sh",
+    "kind": ".sh",
+    "action": "modified",
+    "size_bytes": 1074,
+    "sha256": "705D2CC477779C443098D2FD777431B96EA15A3870BBC06550B0C580B5AC9018"
+  },
+  {
+    "name": "DeskTiles.rc",
+    "relative_path": "DeskTiles.rc",
+    "path": "D:\\DeskTile\\DeskTiles.rc",
+    "kind": ".rc",
+    "action": "modified",
+    "size_bytes": 617,
+    "sha256": "022B21AD86A8B43B9182C8C444F6C624B9385F28A1C2EED4F7731DDD2F20AEE7"
+  },
+  {
+    "name": "alarm-en.png",
+    "relative_path": "docs/alarm-en.png",
+    "path": "D:\\DeskTile\\docs\\alarm-en.png",
+    "kind": ".png",
+    "action": "created",
+    "size_bytes": 22290,
+    "sha256": "0140715AEB14FC3380D4932CDC20B6AC7313B0D8D27D6E314B83C5C3A094BCC1"
+  },
+  {
+    "name": "alarm.png",
+    "relative_path": "docs/alarm.png",
+    "path": "D:\\DeskTile\\docs\\alarm.png",
+    "kind": ".png",
+    "action": "created",
+    "size_bytes": 26543,
+    "sha256": "DF0E2974CBB042F5509DE3BA9A6109386C018E9BAF1C57E535A79F72A9858DE8"
+  },
+  {
+    "name": "control-en.png",
+    "relative_path": "docs/control-en.png",
+    "path": "D:\\DeskTile\\docs\\control-en.png",
+    "kind": ".png",
+    "action": "created",
+    "size_bytes": 47464,
+    "sha256": "60B442532DEE7B4DDB88492B3BAEA8E968D691585A3D16C6998E7BCA49963563"
+  },
+  {
+    "name": "control.png",
+    "relative_path": "docs/control.png",
+    "path": "D:\\DeskTile\\docs\\control.png",
+    "kind": ".png",
+    "action": "modified",
+    "size_bytes": 50195,
+    "sha256": "8551E03714F777FDB2FAC2596FF45408D913C021D23C69F1E09B6D15011F8033"
+  },
+  {
+    "name": "icon-update-delivery.md",
+    "relative_path": "docs/icon-update-delivery.md",
+    "path": "D:\\DeskTile\\docs\\icon-update-delivery.md",
+    "kind": ".md",
+    "action": "created",
+    "size_bytes": 3332,
+    "sha256": "6BE8F40B2C369192BA748D0FA3EED68FC01C225E79071C1B0A701356819C8ED7"
+  },
+  {
+    "name": "reminder.png",
+    "relative_path": "docs/reminder.png",
+    "path": "D:\\DeskTile\\docs\\reminder.png",
+    "kind": ".png",
+    "action": "created",
+    "size_bytes": 7400,
+    "sha256": "14C4C1DF19EEA06EDCB9578E60678643D7F9FCEE67EB4EDE8BCCFFDB1E0F4B78"
+  },
+  {
+    "name": "startup-consent.png",
+    "relative_path": "docs/startup-consent.png",
+    "path": "D:\\DeskTile\\docs\\startup-consent.png",
+    "kind": ".png",
+    "action": "created",
+    "size_bytes": 22160,
+    "sha256": "BA544E9506B359FCA518D59AB7702657597C1ED28F82A9723FFAB34E4839649A"
+  },
+  {
+    "name": "UserGuide.en.md",
+    "relative_path": "docs/UserGuide.en.md",
+    "path": "D:\\DeskTile\\docs\\UserGuide.en.md",
+    "kind": ".md",
+    "action": "created",
+    "size_bytes": 7658,
+    "sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E"
+  },
+  {
+    "name": "使用說明.md",
+    "relative_path": "docs/使用說明.md",
+    "path": "D:\\DeskTile\\docs\\使用說明.md",
+    "kind": ".md",
+    "action": "modified",
+    "size_bytes": 9487,
+    "sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A"
+  },
+  {
+    "name": "網站上架交接.md",
+    "relative_path": "docs/網站上架交接.md",
+    "path": "D:\\DeskTile\\docs\\網站上架交接.md",
+    "kind": ".md",
+    "action": "modified",
+    "size_bytes": 7422,
+    "sha256": "45F2AF6D721AEE89C981D794152E4F7DE55064013FB265D0FBC07C520652E3A0"
+  },
+  {
+    "name": "驗證摘要.txt",
+    "relative_path": "docs/驗證摘要.txt",
+    "path": "D:\\DeskTile\\docs\\驗證摘要.txt",
+    "kind": ".txt",
+    "action": "modified",
+    "size_bytes": 4326,
+    "sha256": "33888BEA09ACD25466F32891588A55CEE3B0AB474B1258DF34E5F616CDF38F38"
+  },
+  {
+    "name": "localization.hpp",
+    "relative_path": "localization.hpp",
+    "path": "D:\\DeskTile\\localization.hpp",
+    "kind": ".hpp",
+    "action": "created",
+    "size_bytes": 26862,
+    "sha256": "E50D830AD8F951CD38F6D75C2C2240C747B60CA09E33B62CCAFC797FE77E11FE"
+  },
+  {
+    "name": "package.ps1",
+    "relative_path": "package.ps1",
+    "path": "D:\\DeskTile\\package.ps1",
+    "kind": ".ps1",
+    "action": "modified",
+    "size_bytes": 4895,
+    "sha256": "FAA8BFA741FC8D02D16151C3C504F7A59F5DF7F8385C0149D9775AE3A47269E3"
+  },
+  {
+    "name": "README.md",
+    "relative_path": "README.md",
+    "path": "D:\\DeskTile\\README.md",
+    "kind": ".md",
+    "action": "modified",
+    "size_bytes": 21976,
+    "sha256": "358EF85736E09239AB6798BA61755E4AA2DB2A04F302250C7867959BABF8F014"
+  },
+  {
+    "name": "DeskTiles-Windows-x64.zip",
+    "relative_path": "release/DeskTiles-Windows-x64.zip",
+    "path": "D:\\DeskTile\\release\\DeskTiles-Windows-x64.zip",
+    "kind": ".zip",
+    "action": "modified",
+    "size_bytes": 504041,
+    "sha256": "507C4B6DC30CA8D50418D4EE83A60847E0CBC3CDBB04B31CB328D4A9FC0FD79E"
+  },
+  {
+    "name": "DeskTiles.exe",
+    "relative_path": "release/DeskTiles/DeskTiles.exe",
+    "path": "D:\\DeskTile\\release\\DeskTiles\\DeskTiles.exe",
+    "kind": ".exe",
+    "action": "modified",
+    "size_bytes": 1068032,
+    "sha256": "DC69FBB53EA3454954B0140983D48227F0F21A7AA7D857AFE4002FF093A90606"
+  },
+  {
+    "name": "README.txt",
+    "relative_path": "release/DeskTiles/README.txt",
+    "path": "D:\\DeskTile\\release\\DeskTiles\\README.txt",
+    "kind": ".txt",
+    "action": "modified",
+    "size_bytes": 1492,
+    "sha256": "5AFF6CC447FEBC5C4FD77995C71A599FA7377BD9BE3AE171183562CDD4C978FF"
+  },
+  {
+    "name": "UserGuide.en.md",
+    "relative_path": "release/DeskTiles/UserGuide.en.md",
+    "path": "D:\\DeskTile\\release\\DeskTiles\\UserGuide.en.md",
+    "kind": ".md",
+    "action": "created",
+    "size_bytes": 7658,
+    "sha256": "3F0200AE062368ED4DB646ED01819D19D2041BED5AA085E17C1D3B443EFBBD8E"
+  },
+  {
+    "name": "使用說明.md",
+    "relative_path": "release/DeskTiles/使用說明.md",
+    "path": "D:\\DeskTile\\release\\DeskTiles\\使用說明.md",
+    "kind": ".md",
+    "action": "modified",
+    "size_bytes": 9487,
+    "sha256": "F03095966813079ECAF7504D95EF5D85B27CB8A5B7F34C421262AE2CBF4D658A"
+  },
+  {
+    "name": "SHA256SUMS.txt",
+    "relative_path": "release/SHA256SUMS.txt",
+    "path": "D:\\DeskTile\\release\\SHA256SUMS.txt",
+    "kind": ".txt",
+    "action": "modified",
+    "size_bytes": 184,
+    "sha256": "EBE077A29C5950B87B3CDDA60EA238CA46264CB96B84F934388631576E9CF0E1"
+  },
+  {
+    "name": "run.ps1",
+    "relative_path": "run.ps1",
+    "path": "D:\\DeskTile\\run.ps1",
+    "kind": ".ps1",
+    "action": "modified",
+    "size_bytes": 1547,
+    "sha256": "7C33B210E49E78479F915D6ACF437BFEAD70840C5203EB371FB539ACF0D31799"
+  },
+  {
+    "name": "startup.hpp",
+    "relative_path": "startup.hpp",
+    "path": "D:\\DeskTile\\startup.hpp",
+    "kind": ".hpp",
+    "action": "created",
+    "size_bytes": 1082,
+    "sha256": "600B7E54BD626D1F61190DEA46826DBDE6CEB55DB5DCDACA6132B298C4C62B12"
+  },
+  {
+    "name": "tests.cpp",
+    "relative_path": "tests.cpp",
+    "path": "D:\\DeskTile\\tests.cpp",
+    "kind": ".cpp",
+    "action": "modified",
+    "size_bytes": 28326,
+    "sha256": "955B7ACBAFE3EEFDB187A3AF63978C92C02C6A28E73BCF6D79BB58FE05DEFAF0"
+  },
+  {
+    "name": "verify-activation.ps1",
+    "relative_path": "verify-activation.ps1",
+    "path": "D:\\DeskTile\\verify-activation.ps1",
+    "kind": ".ps1",
+    "action": "modified",
+    "size_bytes": 4787,
+    "sha256": "D18287C42B2C4031DB49D2A594DE12A9D5C6226A5B83C386857C9C98C054EBD2"
+  },
+  {
+    "name": "verify-composition.ps1",
+    "relative_path": "verify-composition.ps1",
+    "path": "D:\\DeskTile\\verify-composition.ps1",
+    "kind": ".ps1",
+    "action": "created",
+    "size_bytes": 1874,
+    "sha256": "5E14785854C3A7E321B254E14048E20C5630FACBDC55860D386B869BEA6090F3"
+  },
+  {
+    "name": "verify-composition.py",
+    "relative_path": "verify-composition.py",
+    "path": "D:\\DeskTile\\verify-composition.py",
+    "kind": ".py",
+    "action": "created",
+    "size_bytes": 15265,
+    "sha256": "9B63CEDE8AD92FD7924799C4D8A8ADC6ED251C7A13B763EB9F41529165BBE548"
+  },
+  {
+    "name": "verify-consent.py",
+    "relative_path": "verify-consent.py",
+    "path": "D:\\DeskTile\\verify-consent.py",
+    "kind": ".py",
+    "action": "created",
+    "size_bytes": 6953,
+    "sha256": "463DA37C9D98AD1BD656F2C7DBE86F994C6065F43748288746049DAF2488486D"
+  },
+  {
+    "name": "verify-features.ps1",
+    "relative_path": "verify-features.ps1",
+    "path": "D:\\DeskTile\\verify-features.ps1",
+    "kind": ".ps1",
+    "action": "created",
+    "size_bytes": 1839,
+    "sha256": "8BC3E278CC8E349DE53C8A41C8BAC86B73882146F0EA281A6C42040506BF51A0"
+  },
+  {
+    "name": "verify-icons.ps1",
+    "relative_path": "verify-icons.ps1",
+    "path": "D:\\DeskTile\\verify-icons.ps1",
+    "kind": ".ps1",
+    "action": "created",
+    "size_bytes": 4334,
+    "sha256": "668292D1E4C9D4C7FAF33F6FB09DC12EC3558ADD8EA275A062C7285669D117E5"
+  },
+  {
+    "name": "verify-interaction.ps1",
+    "relative_path": "verify-interaction.ps1",
+    "path": "D:\\DeskTile\\verify-interaction.ps1",
+    "kind": ".ps1",
+    "action": "created",
+    "size_bytes": 920,
+    "sha256": "FB84AD0F3A8A4FE22836B040BF0C3355E701985C507F71B6E715E67DE869CF6C"
+  },
+  {
+    "name": "verify-language.ps1",
+    "relative_path": "verify-language.ps1",
+    "path": "D:\\DeskTile\\verify-language.ps1",
+    "kind": ".ps1",
+    "action": "created",
+    "size_bytes": 6986,
+    "sha256": "330C35483A64BE7FE7659BDCE8E4185CFCD04A8FA596C2BDCE2372A11835B5A0"
+  },
+  {
+    "name": "verify-package.ps1",
+    "relative_path": "verify-package.ps1",
+    "path": "D:\\DeskTile\\verify-package.ps1",
+    "kind": ".ps1",
+    "action": "modified",
+    "size_bytes": 2560,
+    "sha256": "35B483EE3DE9C51992D1D709F2D05202F58C1689D59C02B24FADEEB48FFE8720"
+  },
+  {
+    "name": "verify.ps1",
+    "relative_path": "verify.ps1",
+    "path": "D:\\DeskTile\\verify.ps1",
+    "kind": ".ps1",
+    "action": "modified",
+    "size_bytes": 3590,
+    "sha256": "90EA17FD27131D5F9D05CFB6325D9796151AF1118D49ED1DB4B7C53FD4D12FE8"
+  },
+  {
+    "name": "VERSION",
+    "relative_path": "VERSION",
+    "path": "D:\\DeskTile\\VERSION",
+    "kind": "",
+    "action": "created",
+    "size_bytes": 6,
+    "sha256": "2941985EBF534F6541A7F87BCEBF276DE2D28C1B64E4BB762A831D2ACD8F9C8D"
+  },
+  {
+    "name": "win32_features.hpp",
+    "relative_path": "win32_features.hpp",
+    "path": "D:\\DeskTile\\win32_features.hpp",
+    "kind": ".hpp",
+    "action": "created",
+    "size_bytes": 13659,
+    "sha256": "C8130CA532EF31F39951DEE720595053EF32B0474F4B7067A23E8E5BBD1C6AAA"
+  },
+  {
+    "name": "win32.cpp",
+    "relative_path": "win32.cpp",
+    "path": "D:\\DeskTile\\win32.cpp",
+    "kind": ".cpp",
+    "action": "modified",
+    "size_bytes": 180959,
+    "sha256": "FBA0FDF8D528A7DE6622EE865951B7F82A87B2B29BABA7CC8E4BAD013A1AD6A9"
+  }
+]

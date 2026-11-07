@@ -219,3 +219,5 @@ GitHub 的 macOS verified package 工作流程在圖示更新分支建置與驗�
 
 Windows 已知限制：持久化鬧鐘重啟後的時脈啟用問題尚待獨立修正；本批不宣稱已修復該問題。圖示更新不更動使用者版面或自動啟動設定。
 本次部署版本為 v1.01；以 GitHub 原有 afe5098 作為 v1 基準，僅在選定圖示及使用者授權部署的範圍內更新。Windows 檔案資源與 Mac bundle 版本一併標示 1.01。Windows PowerShell 腳本使用 UTF-8 BOM 以支援內建 5.1。
+
+圖示回歸：powershell -NoProfile -ExecutionPolicy Bypass -File verify-icons.ps1 -ExecutablePath <EXE絕對路徑>。腳本先列出圖示、EXE與結果絕對位置，逐尺寸檢查九個ICO的解碼、透明角落及平滑邊緣，再比對打包EXE內嵌圖示的每一個位元組並實際呼叫Windows圖示載入；結果存於build/icon-verification.txt。

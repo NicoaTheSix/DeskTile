@@ -1,29 +1,50 @@
-DeskTiles latest validation — 2026-10-31 Asia/Taipei
-Core: 170 checks passed.
-Packaged EXE: 123 Windows integration checks passed after extracting ZIP.
-Duplicate launch: hidden controller restored; existing process stays alive; layout SHA256 unchanged.
-Legacy DeskTiles duplicate launch: hidden controller restored; layout SHA256 unchanged.
-Original startup cause: an old background DeskTiles process held the data directory lock.
-Fix: query exact lock owner and restore controller; permission failures have a separate path/error-code message.
-Windows x64 PE confirmed. Dependencies are Windows DLLs; no dynamic VC runtime, .NET, Python or browser runtime.
-Package includes EXE, README.txt, user guide, example JSON and third-party MIT notice.
-Package resource sample (three tiles, short local sample):
-PASS checks=123
-idle_sample_seconds=5
-idle_cpu_one_core_percent=0
-working_set_mib=30.4805
-private_mib=7.84766
-handles=245
-gdi_objects=64
-idle_tile_paints=0
-rgb_sample_seconds=10
-rgb_cpu_one_core_percent=0.3125
-rgb_timer_frames=107
-rgb_tile_paints=214
-SHA256 checksums:
-Standard verification: 123 Windows checks passed.
-Additional protection: Unicode paths, corrupt file SHA256 preserved, exclusive data lock rejection all passed.
-77B336514C7A961ABE52DCD579EC4E20AD41E0FD8B6B4099DEAF1AB6B789E8A8  DeskTiles-Windows-x64.zip
-4F7074CE24AA65A186989299E35FD92B2CC7260FFEAAC9AB10358E04F422A17C  DeskTiles/DeskTiles.exe
-Final ZIP rebuilt from current documentation/example; embedded EXE hash matches the fully tested binary.
-Published release EXE launched successfully using the existing user data directory; initialization completed.
+DeskTiles new feature validation — 2026-11-03 Asia/Taipei
+Project: D:\DeskTile
+Release EXE: D:\DeskTile\release\DeskTiles\DeskTiles.exe
+Release EXE SHA256: A4819F0E4D7C7F3BE2FCB452B478435AEB50B4066F2AEC6133B34F8BA26ED6BA
+ZIP: D:\DeskTile\release\DeskTiles-Windows-x64.zip
+ZIP SHA256: F62A61F1CB48057E6C4A6115C3FF8B6E62F4EEF322A29BE7C03BF83BED80C0BB
+
+Implemented:
+- Alarm content type, default Once; also Daily and selected weekdays, with date/time validation and optional enable/disable.
+- Custom text shown alongside alarm time and timer digits in all three tile shapes.
+- Local-calendar recurrence; nonexistent DST times skip their date; a repeated local hour rings only once per date.
+- After sleep/forward jumps, one due reminder rather than a backlog. On restart, expired one-time alarms disable and recurring alarms schedule their next future occurrence.
+- System sound and tray notification plus a nonmodal, dismissible reminder window retaining ten recent entries.
+- Native v6 and JSON v3 persist alarm data and custom text, read old native v1–v5 / JSON v1–v2, and preserve embedded-image backup/merge support.
+- Shared one-second timer only while a timer or enabled alarm requires it. Alarm checks do not rebuild static tile content every second.
+
+Startup consent requirement:
+- Off by default. Checkbox requires a separate affirmative confirmation, with No as default.
+- Confirmation lists absolute executable/data paths; Windows login registration is scoped to this user's DeskTiles value only.
+- Both policy gate and native registry writer refuse enablement without consent.
+- Normal launch, --startup launch, JSON import, language switching, packaging and updates never enable registration.
+- Automatic launch keeps the controller hidden, restores tiles/tray and uses the approved data directory.
+- Actual consent test explicitly pressed No. No test enabled the real Run registration.
+
+Verification on final build/release:
+Core: 222 checks passed.
+Windows integration: 192 checks in Traditional Chinese; 192 in English.
+New feature checks: 26 included in full integration and repeated on the release EXE.
+Language: 18 checks, preference restarts, corruption protection and failed-save protection.
+Ordinary EXE consent/UI/restart: 10 checks passed on final release. Future one-time alarm and text persisted byte-for-byte over an actual --startup restart. Real login value unchanged.
+Extracted ZIP ordinary-start screen composition: 30 + 34 checks passed, covering foreground on-top/desktop occlusion, transparent hit-testing/drag, borders/text/images.
+ZIP has six required files; EXE hash equals build and release; both packaged guides equal source bytes.
+
+Artifacts:
+Core: D:\DeskTile\build\core-test-results.txt
+UI and data protection: D:\DeskTile\build\verify-20261103-135742-888
+Language and English full integration: D:\DeskTile\build\language-20261103-135808-757
+New feature UI and real Run snapshot check: D:\DeskTile\build\features-20261103-140140-155
+Actual declined consent/restart and screenshots: D:\DeskTile\build\consent-20261103-140138
+Extracted ZIP: D:\DeskTile\build\package-test-20261103-135839-411
+On-top start screen checks: D:\DeskTile\build\composition-20261103-135904-855100
+Desktop start screen checks: D:\DeskTile\build\composition-20261103-135915-376300
+
+Scope and limits:
+- Only fictional project fixtures were modified. Personal layout/image data were not read for tests or changed.
+- The app must remain running for alarms. Windows sound/notification preferences still apply. Hot time-zone changes are not covered by this validation; restart the app after changing time zone to rebuild local-time schedules.
+- Other Windows versions, DPI/monitors, Explorer restart and long-duration stress remain broader compatibility work. Linux remains planned.
+- Updating users must save and exit the previous process before opening the new executable; closing only the controller leaves it running.
+
+2026-11-07 v1.01 rounded icon deployment: Windows 222 core / 192 UI / 18 language / 192 English / 192 extracted ZIP; 9 ICO frame resources match EXE and load in Windows. macOS workflow 42359672604 passed 170 core, ICNS, universal architectures, codesign and AppKit. Detailed scope and retained known limitations: docs/icon-update-delivery.md.
