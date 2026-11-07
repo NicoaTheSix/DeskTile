@@ -11,7 +11,7 @@ test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$app/Contents/Info
 icon_root=$(mktemp -d "$PWD/build/icon-verification.XXXXXX")
 iconutil -c iconset "$app/Contents/Resources/DeskTiles.icns" -o "$icon_root/DeskTiles.iconset"
 codesign --verify --deep --strict "$app"
-lipo -verify_arch arm64 x86_64 "$app/Contents/MacOS/DeskTiles"
+lipo "$app/Contents/MacOS/DeskTiles" -verify_arch arm64 x86_64
 printf '[3/4] AppKit integration and loaded icon\n'
 verification_dir=$(mktemp -d "$PWD/build/verification.XXXXXX")
 "$app/Contents/MacOS/DeskTiles" --data-dir "$verification_dir" --smoke-test
