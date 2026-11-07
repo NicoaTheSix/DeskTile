@@ -1,0 +1,114 @@
+{
+  "format": "HexDesk",
+  "images": {
+    "image-1": {
+      "data": "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",
+      "mime": "image/png"
+    }
+  },
+  "tiles": [
+    {
+      "background": {
+        "color": "#243C50",
+        "transparency": 100.0
+      },
+      "border": {
+        "animated": true,
+        "color": "#66ECC1",
+        "cycleSeconds": 6.0,
+        "style": 3,
+        "width": 4.0
+      },
+      "id": 1,
+      "imageAsset": null,
+      "kind": 0,
+      "position": {
+        "x": 95.0,
+        "y": 160.0
+      },
+      "shape": 0,
+      "size": 240.0,
+      "text": "今天的重點\r\n專心完成一件事",
+      "timer": {
+        "countdown": true,
+        "duration": 300.0,
+        "elapsed": 0.0
+      },
+      "topmost": true,
+      "typography": {
+        "color": "#FFE09A",
+        "family": "Consolas",
+        "size": 18.0
+      }
+    },
+    {
+      "background": {
+        "color": "#172730",
+        "transparency": 100.0
+      },
+      "border": {
+        "animated": true,
+        "color": "#66ECC1",
+        "cycleSeconds": 6.0,
+        "style": 3,
+        "width": 4.0
+      },
+      "id": 4,
+      "imageAsset": "image-1",
+      "kind": 1,
+      "position": {
+        "x": 371.92307692307696,
+        "y": 160.0
+      },
+      "shape": 1,
+      "size": 240.0,
+      "text": "三角形",
+      "timer": {
+        "countdown": true,
+        "duration": 300.0,
+        "elapsed": 0.0
+      },
+      "topmost": true,
+      "typography": {
+        "color": "#FFE09A",
+        "family": "Consolas",
+        "size": 18.0
+      }
+    },
+    {
+      "background": {
+        "color": "#172730",
+        "transparency": 0.0
+      },
+      "border": {
+        "animated": true,
+        "color": "#66ECC1",
+        "cycleSeconds": 6.0,
+        "style": 3,
+        "width": 4.0
+      },
+      "id": 5,
+      "imageAsset": null,
+      "kind": 2,
+      "position": {
+        "x": 371.92307692307696,
+        "y": 367.8460969082653
+      },
+      "shape": 2,
+      "size": 240.0,
+      "text": "新文字",
+      "timer": {
+        "countdown": true,
+        "duration": 600.0,
+        "elapsed": 2.0136981
+      },
+      "topmost": true,
+      "typography": {
+        "color": "#FFE09A",
+        "family": "Consolas",
+        "size": 18.0
+      }
+    }
+  ],
+  "version": 2
+}

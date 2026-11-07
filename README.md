@@ -4,6 +4,17 @@
 
 可在 Windows 桌面拼放六角形、三角形與矩形，顯示文字、圖片或計時器。支援多選拖曳、吸附、置頂／桌面層、背景透明、像素／RGB／呼吸邊框及含圖片的 JSON 配置。
 
+
+## macOS 版本
+
+Mac 原生版位於 [DeskTile_mac](DeskTile_mac/README.md)，使用 AppKit 與原有 C++ 核心。
+
+- [下載 Mac 版（Apple silicon／Intel）](DeskTile_mac/release/DeskTiles-macOS-universal.zip)
+- [Mac 使用說明與已知差異](DeskTile_mac/README.md)
+
+解壓後雙擊 `DeskTiles.app`；支援 macOS 12 以上。此版本採本機 ad-hoc 簽章，尚未經 Apple 公證。
+已通過 170 項核心檢查及本機 Apple silicon AppKit 整合測試；Intel、多螢幕與其他 macOS 版本仍待實機驗證。
+
 ## 一般使用者從這裡開始
 
 1. 取得 [DeskTiles-Windows-x64.zip](release/DeskTiles-Windows-x64.zip)，完整解壓縮。
