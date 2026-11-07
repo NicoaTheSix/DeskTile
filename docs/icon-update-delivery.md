@@ -35,3 +35,5 @@ Mac 仍為 ad-hoc 簽章，未申請 Apple 公證；Intel 實機、多螢幕、�
 使用者已授權交給「GitHub網站管理員」更新並發布。請更新專案卡、DeskTiles 中英文頁面／文件、Logo、兩平台下載與 SHA256，沿用原網站發布流程，保留目前其他已部署功能。Windows 與 macOS 功能範圍分開如實說明；Mac 下載不得誤標成 Windows EXE 或已 Apple 公證。
 
 資料與素材全部取自以上正式來源；不要使用舊交接段落中的歷史雜湊。原工作區未提交內容會另存可復原的 Git stash，這不是其他歷史任務驗收。
+
+平台配置限制（原始碼核對）：Windows匯出JSON v3並讀取v1–v3；Mac僅匯出/讀取v1–v2，尚不能直接匯入Windows新版v3，即使未使用鬧鐘亦然。Mac v2可由Windows匯入；本批不新增Mac v3支援。
