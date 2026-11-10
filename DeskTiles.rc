@@ -1,8 +1,8 @@
 #include <windows.h>
 101 ICON "assets/DeskTiles.ico"
 1 VERSIONINFO
- FILEVERSION 1,1,0,0
- PRODUCTVERSION 1,1,0,0
+ FILEVERSION 1,2,0,0
+ PRODUCTVERSION 1,2,0,0
  FILEFLAGSMASK 0x3fL
  FILEFLAGS 0
  FILEOS 0x40004L
@@ -15,11 +15,11 @@ BEGIN
   BEGIN
    VALUE "CompanyName", "Nicoa's Lab"
    VALUE "FileDescription", "DeskTiles desktop widgets"
-   VALUE "FileVersion", "1.01"
+   VALUE "FileVersion", "1.02"
    VALUE "InternalName", "DeskTiles"
    VALUE "OriginalFilename", "DeskTiles.exe"
    VALUE "ProductName", "DeskTiles"
-   VALUE "ProductVersion", "1.01"
+   VALUE "ProductVersion", "1.02"
   END
  END
  BLOCK "VarFileInfo"
