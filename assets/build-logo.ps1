@@ -6,7 +6,9 @@ $macAssets = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\DeskTile_mac\as
 Write-Host "Logo 輸入 SVG：$svgPath"
 Write-Host "Logo 輸出 PNG：$pngPath"
 Write-Host "Logo 輸出 ICO：$icoPath"
-Write-Host "Mac 圖示素材輸出：$macAssets"
+$macIcn = Join-Path $macAssets 'DeskTiles.icns'
+Write-Host "Mac 圖示素材輸出：$macAssets（SVG、PNG）"
+Write-Host "Mac ICNS 輸出：$macIcn"
 Write-Host '[Logo 1/4] 讀取圓角向量母稿'
 Add-Type -AssemblyName System.Drawing
 if (-not ('DeskTiles.VectorIcon' -as [type])) {
@@ -92,5 +94,22 @@ Write-Host '[Logo 4/4] 同步 macOS 的共用向量與高解析 PNG'
 if(Test-Path -LiteralPath $macAssets){
  Copy-Item -LiteralPath $svgPath -Destination (Join-Path $macAssets 'DeskTiles.svg') -Force
  Copy-Item -LiteralPath $pngPath -Destination (Join-Path $macAssets 'DeskTiles-logo.png') -Force
+ # Store a portable ICNS asset; the macOS release build still uses iconutil.
+ $macSizes=[ordered]@{icp4=16;icp5=32;ic07=128;ic08=256;ic09=512;ic11=32;ic12=64;ic13=256;ic14=512;ic10=1024}
+ $frames[512]=[DeskTiles.VectorIcon]::Render($svgPath,512)
+ $frames[1024]=[IO.File]::ReadAllBytes($pngPath)
+ $icnsLength=8
+ foreach($dimension in $macSizes.Values){$icnsLength+=8+$frames[$dimension].Length}
+ $macWriter=[IO.BinaryWriter]::new([IO.File]::Create($macIcn))
+ try {
+  $macWriter.Write([Text.Encoding]::ASCII.GetBytes('icns'))
+  $macWriter.Write([Net.IPAddress]::HostToNetworkOrder([int]$icnsLength))
+  foreach($tag in $macSizes.Keys){
+   $data=[byte[]]$frames[$macSizes[$tag]]
+   $macWriter.Write([Text.Encoding]::ASCII.GetBytes($tag))
+   $macWriter.Write([Net.IPAddress]::HostToNetworkOrder([int](8+$data.Length)))
+   $macWriter.Write($data)
+  }
+ } finally {$macWriter.Dispose()}
 }
 Write-Host '圓角圖示已完成；Mac build.sh 會由 PNG 產生 iconset／ICNS，再重新簽章。'

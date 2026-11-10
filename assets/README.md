@@ -1,6 +1,6 @@
 # DeskTiles 圓角黑白 Logo
 
-採用使用者選定的 A 圓角幾何提案；保留六角形、三角形、矩形、圓形的 2×2 排列，白色圓角底板外為透明背景。
+採用使用者選定的 A 圓角幾何提案；保留六角形、三角形、矩形、圓形的 2×2 排列，白色圓角底板有一圈 28/1024 的深灰（#404040）細邊；原外輪廓與內部四圖形維持原樣，底板之外仍為透明。
 
 ## 來源與輸出
 
@@ -13,7 +13,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\build-logo.ps1
 1. 讀取母稿，檢查可用繪圖組件。
 2. 以四倍取樣及抗鋸齒產生 1024×1024 PNG，保留外角 alpha。
 3. 每個 ICO 尺寸都直接從向量重新渲染，再封裝 16／20／24／32／40／48／64／128／256px PNG frame，供檔案、工作列、視窗與系統匣使用。
-4. 同步 DeskTile_mac/assets 的 SVG 與 PNG，Mac build.sh 以 sips／iconutil 建立標準與 Retina ICNS，於簽章前加入 App bundle。
+4. 同步 DeskTile_mac/assets 的 SVG 與 PNG，並由同一母稿產生 16–1024px 的 ICNS 素材（含 Retina）。Mac build.sh 仍以 sips／iconutil 製作正式 App bundle 的 ICNS，於簽章前加入。
 
 原圖示建置時嵌入 Windows EXE；Mac 的 Info.plist 設定 CFBundleIconFile，控制面板與 Dock 載入相同 ICNS。更新後須退出舊 App 再開啟新包；舊捷徑可能暫時保留系統圖示快取。
 
