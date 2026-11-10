@@ -1,4 +1,4 @@
-﻿param([string]$ExecutableName = 'Latest')
+﻿param([string]$ExecutableName = 'Latest', [string]$DestinationRoot = (Join-Path $PSScriptRoot 'release'))
 $ErrorActionPreference = 'Stop'
 if ($ExecutableName -eq 'Latest') {
     $executable = @('DeskTiles.exe','DeskTiles-update.exe') | ForEach-Object { Join-Path $PSScriptRoot ('build\' + $_) } |
@@ -6,21 +6,24 @@ if ($ExecutableName -eq 'Latest') {
         Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
     if (-not $executable) { throw '請先建置桌面拼格。' }
 } else { $executable = Join-Path $PSScriptRoot ('build\' + $ExecutableName) }
-$releaseRoot = Join-Path $PSScriptRoot 'release'
+$cli = Join-Path $PSScriptRoot 'build\desktiles-cli.exe'
+$releaseRoot = [IO.Path]::GetFullPath($DestinationRoot)
 $staging = Join-Path $PSScriptRoot ('build\package-staging-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
 $stagingApp = Join-Path $staging 'DeskTiles'
 $releaseApp = Join-Path $releaseRoot 'DeskTiles'
 $archive = Join-Path $releaseRoot 'DeskTiles-Windows-x64.zip'
 Write-Host "輸入執行檔絕對路徑：$executable"
+Write-Host "輸入命令列絕對路徑：$cli"
 Write-Host "輸入說明文件：$(Join-Path $PSScriptRoot 'docs\使用說明.md')"
 Write-Host "輸出使用版目錄：$releaseApp"
 Write-Host "輸出 ZIP：$archive"
 Write-Host "輸出 SHA256：$(Join-Path $releaseRoot 'SHA256SUMS.txt')"
 Write-Host '[打包 1/4] 確認輸入檔案'
-if (-not (Test-Path -LiteralPath $executable)) { throw '請先建置最新版本。' }
+if (-not (Test-Path -LiteralPath $executable) -or -not (Test-Path -LiteralPath $cli)) { throw '請先建置應用程式與命令列工具。' }
 foreach ($directory in @($stagingApp,$releaseApp)) { New-Item -ItemType Directory -Path $directory -Force | Out-Null }
 Write-Host '[打包 2/4] 準備免安裝執行檔、說明與授權'
 Copy-Item -LiteralPath $executable -Destination (Join-Path $stagingApp 'DeskTiles.exe')
+Copy-Item -LiteralPath $cli -Destination $stagingApp
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'docs\使用說明.md') -Destination $stagingApp
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'docs\UserGuide.en.md') -Destination $stagingApp
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'docs\mixed-shapes.json') -Destination (Join-Path $stagingApp '範例配置.json')
@@ -35,7 +38,9 @@ Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'third_party\nlohmann\LICENSE.MI
 5. 關閉控制視窗後，桌面圖形仍會繼續顯示；雙擊圖形可開啟控制視窗。
 6. 鬧鐘預設單次，可改每天／指定星期；鬧鐘與計時器都可顯示自訂文字。
 7. 登入後自動啟動預設關閉，只在使用者勾選並明確同意後啟用；JSON 不會改變此設定。
-8. 要結束程式，從圖形右鍵或系統匣選「儲存並結束桌面拼格」。
+8. 在系統匣的「桌面配置」儲存、命名或切換配置。未顯示的配置仍會計時和提醒。
+9. 先開啟 DeskTiles.exe，再從 CMD 或 PowerShell 執行 desktiles-cli.exe --help。
+10. 要結束程式，從圖形右鍵或系統匣選「儲存並結束桌面拼格」。
 
 版面預設儲存於 %LOCALAPPDATA%\HexDesk，沿用舊版本位置。
 若已有程式使用相同資料目錄，會帶回既有視窗。要換新版，請先結束舊版。
@@ -49,7 +54,8 @@ foreach ($file in Get-ChildItem -LiteralPath $stagingApp -File) { Copy-Item -Lit
 Write-Host '[打包 4/4] 計算檔案雜湊'
 $zipHash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
 $exeHash = (Get-FileHash -LiteralPath (Join-Path $releaseApp 'DeskTiles.exe') -Algorithm SHA256).Hash
-@("$zipHash  DeskTiles-Windows-x64.zip", "$exeHash  DeskTiles/DeskTiles.exe") | Set-Content -LiteralPath (Join-Path $releaseRoot 'SHA256SUMS.txt') -Encoding ascii
+$cliHash = (Get-FileHash -LiteralPath (Join-Path $releaseApp 'desktiles-cli.exe') -Algorithm SHA256).Hash
+@("$zipHash  DeskTiles-Windows-x64.zip", "$exeHash  DeskTiles/DeskTiles.exe", "$cliHash  DeskTiles/desktiles-cli.exe") | Set-Content -LiteralPath (Join-Path $releaseRoot 'SHA256SUMS.txt') -Encoding ascii
 Get-Item -LiteralPath $archive,(Join-Path $releaseApp 'DeskTiles.exe') | Select-Object FullName,Length
 $resolvedStaging = (Resolve-Path -LiteralPath $staging).Path
 $buildRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'build')).TrimEnd('\')

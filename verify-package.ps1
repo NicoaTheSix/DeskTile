@@ -1,6 +1,7 @@
-﻿param([switch]$Composition)
+﻿param([switch]$Composition, [string]$ReleaseDirectory=(Join-Path $PSScriptRoot 'release'))
 $ErrorActionPreference = 'Stop'
-$archive = Join-Path $PSScriptRoot 'release\DeskTiles-Windows-x64.zip'
+$ReleaseDirectory=[IO.Path]::GetFullPath($ReleaseDirectory)
+$archive = Join-Path $ReleaseDirectory 'DeskTiles-Windows-x64.zip'
 $testRoot = Join-Path $PSScriptRoot ('build\package-test-' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
 $extractRoot = Join-Path $testRoot 'unpacked'
 $dataRoot = Join-Path $testRoot 'data'
@@ -11,13 +12,17 @@ Write-Host '[套件驗證 1/3] 解壓縮並確認必要檔案'
 Expand-Archive -LiteralPath $archive -DestinationPath $extractRoot
 $appDirectory = Join-Path $extractRoot 'DeskTiles'
 $executable = Join-Path $appDirectory 'DeskTiles.exe'
-foreach ($name in @('DeskTiles.exe','README.txt','使用說明.md','UserGuide.en.md','THIRD-PARTY-NOTICES.txt','範例配置.json')) {
+foreach ($name in @('DeskTiles.exe','desktiles-cli.exe','README.txt','使用說明.md','UserGuide.en.md','THIRD-PARTY-NOTICES.txt','範例配置.json')) {
     if (-not (Test-Path -LiteralPath (Join-Path $appDirectory $name))) { throw "套件缺少檔案：$name" }
 }
-if ((Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath (Join-Path $PSScriptRoot 'release\DeskTiles\DeskTiles.exe') -Algorithm SHA256).Hash) { throw '套件執行檔與正式使用版不同。' }
+if ((Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath (Join-Path $ReleaseDirectory 'DeskTiles\DeskTiles.exe') -Algorithm SHA256).Hash) { throw '套件執行檔與正式使用版不同。' }
+$cli = Join-Path $appDirectory 'desktiles-cli.exe'
+if ((Get-FileHash -LiteralPath $cli).Hash -ne (Get-FileHash -LiteralPath (Join-Path $ReleaseDirectory 'DeskTiles\desktiles-cli.exe')).Hash) { throw '套件命令列工具與打包輸出不同。' }
+& $cli --help | Out-Null
+if($LASTEXITCODE -ne 0){throw '套件命令列工具無法啟動。'}
 Write-Host '[套件驗證 2/3] 直接執行解壓後的 EXE，測試全部 Windows 功能'
 $process = Start-Process -FilePath $executable -WorkingDirectory $appDirectory -ArgumentList @('--smoke-test','--data-dir',('"'+$dataRoot+'"')) -PassThru -WindowStyle Hidden
-if (-not $process.WaitForExit(30000)) { $process.Kill(); throw '套件整合測試逾時。' }
+if (-not $process.WaitForExit(90000)) { $process.Kill(); throw '套件整合測試逾時。' }
 if ($process.ExitCode -ne 0) { throw "套件執行失敗：$dataRoot\session.log" }
 Get-Content -LiteralPath (Join-Path $dataRoot 'integration-results.txt')
 if($Composition){

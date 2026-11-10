@@ -153,11 +153,11 @@ void RefreshReminder() {
     if(!app.reminder)return;
     SetWindowTextW(app.reminder,Tr(L"DeskTiles · 提醒"));
     std::wstring text;for(const auto& item:app.reminderMessages)
-        text+=std::wstring(item.alarm?Tr(L"鬧鐘時間到"):Tr(L"倒數結束"))+L" · #"+std::to_wstring(item.id)+L"\r\n"+item.text+L"\r\n\r\n";
+        text+=std::wstring(item.alarm?Tr(L"鬧鐘時間到"):Tr(L"倒數結束"))+L" · #"+std::to_wstring(item.id)+(item.profile.empty()?L"":L" · "+item.profile)+L"\r\n"+item.text+L"\r\n\r\n";
     SetWindowTextW(GetDlgItem(app.reminder,IdReminderText),text.c_str());
     SetWindowTextW(GetDlgItem(app.reminder,IdDismiss),Tr(L"知道了"));
 }
-void NotifyTile(const Tile& tile,bool alarm,bool preview) {
+void NotifyTile(const Tile& tile,bool alarm,bool preview,const std::wstring& profile) {
     if(app.smoke&&!preview)return;
     if(!app.reminder) {
         WNDCLASSW klass{};klass.hInstance=app.instance;klass.lpszClassName=ReminderClass;klass.lpfnWndProc=ReminderProc;
@@ -172,7 +172,8 @@ void NotifyTile(const Tile& tile,bool alarm,bool preview) {
         for(auto h:{text,close})SendMessageW(h,WM_SETFONT,reinterpret_cast<WPARAM>(app.font),TRUE);
     }
     std::wstring title=std::wstring(alarm?Tr(L"鬧鐘時間到"):Tr(L"倒數結束"))+L" · #"+std::to_wstring(tile.id);
-    app.reminderMessages.push_back({tile.id,alarm,Wide(tile.text).substr(0,4000)});
+    if(!profile.empty())title+=L" · "+profile;
+    app.reminderMessages.push_back({tile.id,alarm,Wide(tile.text).substr(0,4000),profile});
     if(app.reminderMessages.size()>10)app.reminderMessages.erase(app.reminderMessages.begin());
     RefreshReminder();ShowWindow(app.reminder,SW_SHOWNORMAL);
     if(app.smoke)return;

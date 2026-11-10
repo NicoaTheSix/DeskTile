@@ -111,3 +111,22 @@ JSON 限制：最多 500 格；每張圖片 16 MiB、圖片總量 64 MiB、JSON 
 不同資料目錄可以分別執行，彼此不會改動對方版面。不同 Windows 版本、多螢幕、DPI 與 Explorer 重新啟動的相容性仍需持續驗收。
 
 所選字體缺少內容中的中文字元時，整段內容會使用可完整顯示的中文字體替代，讓量測與繪製保持一致，避免字元重疊；原字體名稱與字級設定仍保留，純英文且受支援的內容維持選定字體。
+
+
+## Windows：多套桌面配置與指令操作
+
+在系統匣右鍵選「桌面配置」。你可以保存目前配置的副本、新增空白配置、重新命名，或點選清單直接切換。勾選項是目前顯示的配置。切換只會換畫面，其他配置裡的倒數和鬧鐘仍會運作，提醒會標出配置名稱。另存副本不會啟動第二組提醒；要使用副本的排程，可以再手動啟用。
+
+先啟動 DeskTiles.exe。在 CMD 執行 `desktiles-cli.exe --help`，在 PowerShell 執行 `./desktiles-cli.exe --help`。常用指令如下：
+
+```text
+desktiles-cli.exe layout switch "工作"
+desktiles-cli.exe tile list
+desktiles-cli.exe tile add --shape hexagon --text "今日待辦"
+desktiles-cli.exe tile update --id 1 --text "已完成"
+desktiles-cli.exe tile hide --id 1
+desktiles-cli.exe tile show --id 1
+desktiles-cli.exe tile delete --id 1
+```
+
+請把範例的 `1` 換成 `tile list` 顯示的實際 ID。方塊指令可加 `--layout "配置名稱"` 操作指定配置。自訂資料目錄時，請在子指令前加 `--data-dir` 並使用與 App 相同的路徑。完整配置與 CLI 說明見專案 README。

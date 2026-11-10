@@ -11,6 +11,9 @@ Write-Host "JSON 相依檔案：$(Join-Path $sourceRoot 'third_party\nlohmann\js
 Write-Host "鬧鐘核心輸入：$(Join-Path $sourceRoot 'alarm.hpp')"
 Write-Host "啟動同意規則輸入：$(Join-Path $sourceRoot 'startup.hpp')"
 Write-Host "Windows 新功能輸入：$(Join-Path $sourceRoot 'win32_features.hpp')"
+Write-Host "桌面配置輸入：$(Join-Path $sourceRoot 'layouts.hpp')、$(Join-Path $sourceRoot 'win32_layouts.hpp')"
+Write-Host "命令列輸入：$(Join-Path $sourceRoot 'desktiles_cli.cpp')、$(Join-Path $sourceRoot 'win32_layout_commands.hpp')、$(Join-Path $sourceRoot 'win32_cli_transport.hpp')"
+Write-Host "命令列輸出：$(Join-Path $outputRoot 'desktiles-cli.exe')"
 Write-Host "測試輸入：$(Join-Path $sourceRoot 'tests.cpp')"
 Write-Host "翻譯表輸入：$(Join-Path $sourceRoot 'localization.hpp')"
 Write-Host "Logo 向量輸入：$(Join-Path $sourceRoot 'assets\DeskTiles.svg')"
@@ -19,7 +22,7 @@ Write-Host "圖示資源輸出：$(Join-Path $outputRoot 'DeskTiles.res')"
 Write-Host "輸出執行檔：$executablePath"
 Write-Host "測試輸出：$(Join-Path $outputRoot 'core-test-results.txt')"
 Write-Progress -Activity '建置 DeskTiles' -Status '確認編譯器' -PercentComplete 5
-Write-Host '[1/4] 尋找 Microsoft C++ 工具鏈'
+Write-Host '[1/5] 尋找 Microsoft C++ 工具鏈'
 $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 if (-not (Test-Path -LiteralPath $vswhere)) { throw '找不到 vswhere，請安裝 Visual Studio C++ 桌面開發工具。' }
 $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
@@ -36,20 +39,24 @@ foreach ($line in $environmentLines) {
 }
 Push-Location $outputRoot
 try {
-    Write-Host '[2/4] 編譯 Windows 應用程式'
+    Write-Host '[2/5] 編譯 Windows 應用程式'
     Write-Progress -Activity '建置 DeskTiles' -Status '編譯應用程式' -PercentComplete 25
     & (Join-Path $sourceRoot 'assets\build-logo.ps1')
     & rc.exe /nologo ('/i' + $sourceRoot) /foDeskTiles.res (Join-Path $sourceRoot 'DeskTiles.rc')
     if ($LASTEXITCODE -ne 0) { throw '圖示資源編譯失敗。' }
     & cl.exe /nologo /std:c++17 /utf-8 /EHsc /W4 /external:anglebrackets /external:W0 /O2 /MT (Join-Path $sourceRoot 'win32.cpp') DeskTiles.res ('/Fe:' + $OutputName) /Fo:DeskTiles.obj /link /SUBSYSTEM:WINDOWS /DYNAMICBASE /NXCOMPAT /MANIFEST:EMBED (('/MANIFESTINPUT:') + (Join-Path $sourceRoot 'HexDesk.manifest'))
     if ($LASTEXITCODE -ne 0) { throw '應用程式編譯失敗。' }
-    Write-Host '[3/4] 編譯並執行跨平台核心測試'
+    Write-Host '[3/5] 編譯 CMD／PowerShell 命令列工具'
+    Write-Progress -Activity '建置 DeskTiles' -Status '編譯命令列工具' -PercentComplete 45
+    & cl.exe /nologo /std:c++17 /utf-8 /EHsc /W4 /external:anglebrackets /external:W0 /O2 /MT (Join-Path $sourceRoot 'desktiles_cli.cpp') /Fe:desktiles-cli.exe /Fo:DeskTilesCli.obj /link /SUBSYSTEM:CONSOLE /DYNAMICBASE /NXCOMPAT
+    if ($LASTEXITCODE -ne 0) { throw '命令列工具編譯失敗。' }
+    Write-Host '[4/5] 編譯並執行跨平台核心測試'
     Write-Progress -Activity '建置 DeskTiles' -Status '執行核心測試' -PercentComplete 60
     & cl.exe /nologo /std:c++17 /utf-8 /EHsc /W4 /O2 /MT (Join-Path $sourceRoot 'tests.cpp') /Fe:CoreTests.exe /Fo:CoreTests.obj
     if ($LASTEXITCODE -ne 0) { throw '核心測試編譯失敗。' }
     & .\CoreTests.exe (Join-Path $sourceRoot 'core.hpp') | Tee-Object -FilePath (Join-Path $outputRoot 'core-test-results.txt')
     if ($LASTEXITCODE -ne 0) { throw '核心測試未通過。' }
-    Write-Host '[4/4] 驗證輸出'
+    Write-Host '[5/5] 驗證輸出'
     Write-Progress -Activity '建置 DeskTiles' -Status '驗證輸出' -PercentComplete 85
     if ($Integration) {
         & (Join-Path $sourceRoot 'verify.ps1') -ExecutableName $OutputName

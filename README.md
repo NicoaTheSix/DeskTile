@@ -223,3 +223,37 @@ Windows 已知限制：持久化鬧鐘重啟後的時脈啟用問題尚待獨立
 圖示回歸：powershell -NoProfile -ExecutionPolicy Bypass -File verify-icons.ps1 -ExecutablePath <EXE絕對路徑>。腳本先列出圖示、EXE與結果絕對位置，逐尺寸檢查九個ICO的解碼、透明角落及平滑邊緣，再比對打包EXE內嵌圖示的每一個位元組並實際呼叫Windows圖示載入；結果存於build/icon-verification.txt。
 
 平台配置限制（原始碼核對）：Windows匯出JSON v3並讀取v1–v3；Mac僅匯出/讀取v1–v2，尚不能直接匯入Windows新版v3，即使未使用鬧鐘亦然。Mac v2可由Windows匯入；本批不新增Mac v3支援。
+
+
+## 多套桌面配置與命令列（Windows）
+
+從系統匣右鍵選「桌面配置」，可以保存目前配置的副本、新增空白配置、重新命名目前配置，或直接切換。勾選項是目前顯示的配置；重新開啟 App 也會回到這一套。切換只換桌面上的方塊：其他配置的計時器與鬧鐘仍會運作，提醒會標示配置名稱。保存副本時，副本的計時器先暫停、鬧鐘先停用，避免同一提醒響兩次。
+
+先執行同資料夾的 DeskTiles.exe，再從 CMD 或 PowerShell 執行以下指令。PowerShell 在目前目錄執行時用 `./desktiles-cli.exe`（也可用 `.\desktiles-cli.exe`）；CMD 可直接用 `desktiles-cli.exe`。
+
+```text
+desktiles-cli.exe layout list
+desktiles-cli.exe layout create "工作" --empty
+desktiles-cli.exe layout switch "工作"
+desktiles-cli.exe tile add --shape hexagon --text "今日待辦"
+desktiles-cli.exe tile list
+desktiles-cli.exe tile update --id 1 --text "已完成"
+desktiles-cli.exe tile hide --id 1
+desktiles-cli.exe tile show --id 1
+desktiles-cli.exe tile delete --id 1
+```
+
+- `tile list` 列出 ID 和目前可見狀態；`tile get --id 1` 也會顯示內容與計時／鬧鐘狀態。ID 的範圍是一套配置。
+- 可用 `tile list --layout "工作"` 或在任何方塊指令加上 `--layout "工作"` 操作背景配置；不會自動切換。未指定時使用目前配置。
+- `layout create NAME` 保存目前配置副本；加 `--empty` 建空配置。名稱按原字比對。用 `layout rename OLD NEW` 改名；要刪除整套配置，先切到另一套，再用 `layout delete NAME --yes`。
+- `--help` 列出形狀、位置、尺寸、圖片、顯示層級、計時和鬧鐘選項。用 `--json`（放在命令前）取得單行 JSON；成功輸出到 stdout、錯誤輸出到 stderr。離開碼 0 為成功、2 為指令或儲存錯誤、3 為沒有對應的執行個體、4 為未收到回覆。
+- 若 App 以 `--data-dir` 指定資料目錄，CLI 也須使用相同路徑，例如 `desktiles-cli.exe --data-dir "D:\DeskTilesData" --json layout list`。
+
+### 儲存、排程與建置流程
+
+1. App 先列出絕對資料路徑。沒有 `layouts.hexdesk.json` 時照常讀取舊的 `layout.hexdesk`；第一次儲存具名配置或用 CLI 寫入時，保存為資料目錄下的 `layouts.hexdesk.json` 並保留舊檔。之後具名配置檔是唯一生效的配置資料來源，儲存前備份上一份至 `layouts.backup.json`。上限為 32 套，每套 500 格。
+2. 系統匣及 CLI 修改都由同一個 App 執行：準備新配置或視窗 → 備份並原子保存 → 顯示新畫面。寫入失敗保留舊配置及顯示。外部 CLI 只連到同使用者、同資料目錄的執行個體，不直接寫資料檔。CLI 對成功輸出保留乾淨 JSON；App 狀態列和 session.log 顯示路徑與進度。
+3. 共用時脈同時推進所有配置；只有目前配置建立方塊視窗。個別方塊的隱藏狀態隨該套配置保存。App 完全關閉後不會提醒；重新開啟時鬧鐘重新排程，計時器保留已經過時間並維持原本的暫停規則。舊的 JSON 匯入／匯出依然只作用於目前配置，維持舊格式。
+4. `build.ps1` 依序定位工具鏈、編譯 GUI、編譯 CLI、執行核心測試及核對輸出。 `verify-layouts-cli.ps1` 使用獨立資料目錄，驗證 CMD、PowerShell、系統匣、重啟、儲存回復、背景倒數及實際鬧鐘。 `package.ps1` 將 GUI 和 CLI 一起打包；驗證腳本會列出絕對輸入／輸出路徑及各階段進度。
+
+此功能目前適用 Windows；macOS 套件尚未包含多套配置及這個 CLI。

@@ -22,6 +22,8 @@
 #include <functional>
 #include "core.hpp"
 #include "config.hpp"
+#include "layouts.hpp"
+#include "win32_cli_transport.hpp"
 #include "localization.hpp"
 #include "startup.hpp"
 using namespace desktile_ui;
@@ -121,7 +123,7 @@ struct TileView {
     std::string imagePath;
     bool imageFailed=false,surfaceDirty=true,presentationFailed=false;
 };
-struct ReminderEntry {int id;bool alarm;std::wstring text;};
+struct ReminderEntry {int id;bool alarm;std::wstring text,profile;};
 struct App {
     HINSTANCE instance=nullptr;
     HWND control=nullptr,progress=nullptr,desktop=nullptr;
@@ -139,13 +141,16 @@ struct App {
     HWND backgroundControl=nullptr;
     std::map<int,HWND> backgroundWidgets;
     std::vector<Tile> tiles;
+    LayoutCatalog catalog;
+    std::set<int> hidden;
+    bool profileMode=false,stagingViews=false,popupActive=false,cliReady=false,cliBusy=false;
     std::map<int,TileView> views;
     std::set<int> selection;
     int primary=0,nextId=1;
     fs::path directory,statePath,logPath;
     std::ofstream log;
     bool loadingControls=false,dragging=false,moved=false,savingFailed=false,exiting=false;
-    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false;
+    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false,trayLayoutOnly=false;
     std::map<HWND,const Translation*> uiLabels;
     Point dragStart,dragDelta;
     HWND dragWindow=nullptr;
@@ -192,7 +197,7 @@ void RefreshAlarm();
 void RefreshStartup();
 void ToggleStartup();
 void RefreshReminder();
-void NotifyTile(const Tile&,bool alarm,bool preview=false);
+void NotifyTile(const Tile&,bool alarm,bool preview=false,const std::wstring& profile={});
 std::wstring AlarmSummary(const Alarm&);
 std::wstring AlarmCaption(const Alarm&);
 void ShowBackground();
@@ -201,6 +206,12 @@ void ChooseExport();
 void ChooseImport(bool merge);
 bool SwitchLanguage(Language value,bool persist=true);
 void AtomicOutput(const fs::path&,const std::function<void(std::ostream&)>&);
+fs::path CatalogPath();
+fs::path CatalogBackup();
+LayoutCatalog CurrentCatalog();
+void WriteCatalog(const LayoutCatalog&);
+void AddProfileMenu(HMENU);
+bool ProfileMenuCommand(int);
 Tile* Find(int id) { for(auto& t:app.tiles) if(t.id==id) return &t; return nullptr; }
 void Log(const std::wstring& message) {
     SYSTEMTIME now; GetLocalTime(&now);
@@ -215,7 +226,7 @@ void Status(const std::wstring& message) {
 void Error(const std::wstring& message) {
     Log(L"ERROR: "+message);
     if(app.widgets.count(200))SetWindowTextW(app.widgets[200],message.c_str());
-    if(!app.smoke) MessageBoxW(app.control,message.c_str(),Tr(L"桌面拼格"),MB_OK|MB_ICONWARNING);
+    if(!app.smoke && !app.cliBusy) MessageBoxW(app.control,message.c_str(),Tr(L"桌面拼格"),MB_OK|MB_ICONWARNING);
 }
 void Progress(int n,const std::wstring& message) {
     std::wstring text=L"["+std::to_wstring(n)+L"/5] "+message;
@@ -232,7 +243,9 @@ Point DisplayPosition(const Tile& t) {
 }
 void Position(Tile& t) {
     auto it=app.views.find(t.id); if(it==app.views.end()) return;
-    HWND window=it->second.window; auto p=DisplayPosition(t);
+    HWND window=it->second.window;
+    if(app.hidden.count(t.id)||app.stagingViews){ShowWindow(window,SW_HIDE);return;}
+    auto p=DisplayPosition(t);
     POINT point{static_cast<LONG>(std::lround(p.x)),static_cast<LONG>(std::lround(p.y))};
     // Both modes remain top-level popups, so positions are always screen coordinates.
     SetWindowPos(window,t.topmost?HWND_TOPMOST:HWND_BOTTOM,point.x,point.y,PixelWidth(t),PixelHeight(t),
@@ -464,6 +477,7 @@ void DrawTile(HDC dc,Tile& tile) {
     Graphics target(dc);target.DrawImage(&bitmap,0,0);
 }
 void PresentTile(Tile& tile) {
+    if(app.stagingViews||app.hidden.count(tile.id))return;
     auto& view=app.views[tile.id];if(!view.visual)return;
     auto& frame=RenderTile(tile);SIZE size{frame.width,frame.height};POINT origin{};
     SetWindowPos(view.visual,nullptr,0,0,size.cx,size.cy,SWP_NOZORDER|SWP_NOACTIVATE|SWP_SHOWWINDOW);
@@ -509,6 +523,7 @@ void CreateTileWindow(Tile& t) {
     UpdateTileRegion(t);
     LoadImage(t);
     if(!SetLayer(t,t.topmost)) {
+        if(app.stagingViews)throw std::runtime_error("The requested desktop layer is not available.");
         t.topmost=true; SetLayer(t,true);
         Error(Tr(L"桌面宿主無法使用，此格暫以置頂顯示。可從右鍵重試固定於桌面層。"));
     }
@@ -517,6 +532,7 @@ void CreateTileWindow(Tile& t) {
 void SaveState() {
     if(app.exiting) return;
     try {
+        if(app.profileMode){WriteCatalog(CurrentCatalog());app.savingFailed=false;return;}
         auto temporary=app.directory/L"layout.tmp";
         { std::ofstream out(temporary,std::ios::binary|std::ios::trunc); Save(out,app.tiles); out.close();
           if(!out) throw std::runtime_error("無法完成版面寫入"); }
@@ -536,14 +552,15 @@ void ShowControl() {
     RefreshControls(); ShowWindow(app.control,SW_SHOWNORMAL); SetForegroundWindow(app.control);
 }
 void UpdateClock() {
-    bool running=false;
-    for(auto& t:app.tiles) if((t.kind==Kind::Timer && t.running)||(t.kind==Kind::Alarm&&t.alarm.enabled&&t.alarm.nextDue)) running=true;
+    bool running=std::any_of(app.tiles.begin(),app.tiles.end(),HasSchedule);
+    for(const auto& [id,p]:app.catalog.profiles)if(id!=app.catalog.active&&!running)
+        running=std::any_of(p.tiles.begin(),p.tiles.end(),HasSchedule);
     if(running && !app.sharedClock) {
-        app.lastTick=std::chrono::steady_clock::now(); SetTimer(app.control,1,1000,nullptr); app.sharedClock=true;
+        app.lastTick=std::chrono::steady_clock::now();app.sharedClock=SetTimer(app.control,1,1000,nullptr)!=0;
     } else if(!running && app.sharedClock) { KillTimer(app.control,1); app.sharedClock=false; }
 }
 void UpdateAnimation() {
-    bool needed=std::any_of(app.tiles.begin(),app.tiles.end(),[](const Tile& t){return AnimatedBorder(t);});
+    bool needed=std::any_of(app.tiles.begin(),app.tiles.end(),[](const Tile& t){return !app.hidden.count(t.id)&&AnimatedBorder(t);});
     if(needed && !app.animationTimer) {
         app.animationTimer=SetTimer(app.control,3,83,nullptr)!=0;
     } else if(!needed && app.animationTimer) {KillTimer(app.control,3);app.animationTimer=false;}
@@ -551,7 +568,7 @@ void UpdateAnimation() {
 void AnimateBorders() {
     if(!app.animationTimer)return;
     ++app.animationFrames;
-    for(auto& tile:app.tiles) if(AnimatedBorder(tile)) {
+    for(auto& tile:app.tiles) if(!app.hidden.count(tile.id)&&AnimatedBorder(tile)) {
         auto& view=app.views[tile.id];
         if(IsWindowVisible(view.window))InvalidateRect(view.window,nullptr,FALSE);
     }
@@ -559,23 +576,35 @@ void AnimateBorders() {
 void TickTimers() {
     auto steady=std::chrono::steady_clock::now();
     double seconds=std::chrono::duration<double>(steady-app.lastTick).count();app.lastTick=steady;
-    auto now=static_cast<std::int64_t>(std::time(nullptr));std::vector<std::pair<int,bool>> due;
-    for(auto& tile:app.tiles) {
-        bool repaint=false;
-        if(tile.kind==Kind::Timer&&tile.running) {
-            if(Advance(tile,seconds))due.push_back({tile.id,false});repaint=true;
-        } else if(tile.kind==Kind::Alarm&&AdvanceAlarm(tile.alarm,now)) {due.push_back({tile.id,true});repaint=true;}
-        if(repaint){app.views[tile.id].surfaceDirty=true;InvalidateRect(app.views[tile.id].window,nullptr,FALSE);}
-    }
+    auto now=static_cast<std::int64_t>(std::time(nullptr));
+    struct Notice {Tile tile;bool alarm;int layout;};
+    std::vector<Notice> due;
+    auto tick=[&](std::vector<Tile>& tiles,int layout,bool active) {
+        for(auto& tile:tiles){
+            auto result=AdvanceLayoutClock(tile,seconds,now);
+            if(result.due)due.push_back({tile,result.alarm,layout});
+            if(result.changed&&active&&!app.hidden.count(tile.id)){
+                auto it=app.views.find(tile.id);
+                if(it!=app.views.end()){it->second.surfaceDirty=true;InvalidateRect(it->second.window,nullptr,FALSE);}
+            }
+        }
+    };
+    tick(app.tiles,app.catalog.active,true);
+    for(auto& [id,p]:app.catalog.profiles)if(id!=app.catalog.active)tick(p.tiles,id,false);
     UpdateClock();
     if(!due.empty()) {
-        // Persist the consumed occurrence before presenting nonmodal notifications.
+        // Save consumed occurrences across all layouts before displaying reminders.
         SaveState();
-        for(auto item:due)if(auto* tile=Find(item.first)) {
-            Status(Tr(L"圖形 #")+std::to_wstring(tile->id)+(item.second?Tr(L"：鬧鐘時間到。"):Tr(L"：倒數結束。")));
-            NotifyTile(*tile,item.second);
-            if(tile->id==app.primary && item.second)SetWindowTextW(app.widgets[245],AlarmSummary(tile->alarm).c_str());
-            if(tile->id==app.primary && !item.second)SetWindowTextW(app.widgets[IdStart],Tr(L"開始計時"));
+        for(const auto& item:due){
+            auto at=app.catalog.profiles.find(item.layout);
+            auto name=app.profileMode&&at!=app.catalog.profiles.end()?Wide(at->second.name):std::wstring{};
+            Status((name.empty()?std::wstring{}:name+L" · ")+Tr(L"圖形 #")+std::to_wstring(item.tile.id)+
+                (item.alarm?Tr(L"：鬧鐘時間到。"):Tr(L"：倒數結束。")));
+            NotifyTile(item.tile,item.alarm,false,name);
+            if(item.layout==app.catalog.active && item.tile.id==app.primary){
+                if(item.alarm)SetWindowTextW(app.widgets[245],AlarmSummary(item.tile.alarm).c_str());
+                else SetWindowTextW(app.widgets[IdStart],Tr(L"開始計時"));
+            }
         }
     }
 }
@@ -643,6 +672,7 @@ void RefreshControls() {
     int index=0,selectedIndex=-1;
     for(auto& t:app.tiles) {
         auto label=(app.selection.count(t.id)?L"● ":L"   ")+std::wstring(L"#")+std::to_wstring(t.id)+L" "+ShapeName(t.shape)+L" · "+KindName(t.kind);
+        if(app.hidden.count(t.id))label+=language==Language::English?L" (hidden)":L"（已隱藏）";
         int at=static_cast<int>(SendMessageW(list,LB_ADDSTRING,0,reinterpret_cast<LPARAM>(label.c_str())));
         SendMessageW(list,LB_SETITEMDATA,at,t.id);
         if(t.id==app.primary) selectedIndex=index;
@@ -670,7 +700,7 @@ void RefreshControls() {
     RefreshBackground();RefreshAlarm();
 }
 void AddTile(Shape shape) {
-    if(app.tiles.size()>=500) { Error(Tr(L"第一版最多支援 500 格。")); return; }
+    if(app.tiles.size()>=500 || app.nextId>TileIdLimit) { Error(Tr(L"第一版最多支援 500 格。")); return; }
     Log(Tr(L"新增圖形輸入：控制視窗／右鍵選單；輸出：")+app.statePath.wstring());
     Status(Tr(L"[新增 1/3] 尋找 ")+ShapeName(shape)+Tr(L" 的可用相鄰位置"));
     Tile tile;tile.id=app.nextId++;tile.shape=shape;tile.text=Utf8(Tr(L"新文字"));
@@ -749,7 +779,7 @@ void DeleteSelected() {
     if(app.selection.empty()) return;
     auto message=Tr(L"確定刪除選取的 ")+std::to_wstring(app.selection.size())+TrCounted(L" 個圖形？",app.selection.size());
     if(!app.smoke && MessageBoxW(app.control,message.c_str(),Tr(L"刪除圖形"),MB_YESNO|MB_ICONQUESTION)!=IDYES) return;
-    for(auto id:app.selection) {DestroyWindow(app.views[id].window);app.views.erase(id);}
+    for(auto id:app.selection) {DestroyWindow(app.views[id].window);app.views.erase(id);app.hidden.erase(id);}
     app.tiles.erase(std::remove_if(app.tiles.begin(),app.tiles.end(),[](const Tile& t){return app.selection.count(t.id)!=0;}),app.tiles.end());
     app.selection.clear(); app.primary=0; UpdateClock();UpdateAnimation(); RefreshControls(); SaveState();
 }
@@ -770,6 +800,7 @@ void AddTray() {
 }
 HMENU BuildTileMenu(bool trayMenu) {
     HMENU menu=CreatePopupMenu();
+    if(trayMenu)AddProfileMenu(menu);
     AppendMenuW(menu,MF_STRING,IdEdit,Tr(L"開啟控制視窗"));
     HMENU shapes=CreatePopupMenu();
     AppendMenuW(shapes,MF_STRING,IdAddHex,Tr(L"六角形（預設）"));AppendMenuW(shapes,MF_STRING,IdAddTriangle,Tr(L"三角形"));
@@ -817,11 +848,14 @@ void Popup(HWND window,int id,POINT point,bool trayMenu=false) {
     HMENU menu=BuildTileMenu(trayMenu);
     // Use the controller for menus so desktop tiles remain in the desktop band.
     SetForegroundWindow(app.control);
+    app.popupActive=true;
     int result=TrackPopupMenu(menu,TPM_RETURNCMD|TPM_RIGHTBUTTON,point.x,point.y,0,app.control,nullptr);
+    app.popupActive=false;
     DestroyMenu(menu); PostMessageW(window,WM_NULL,0,0);
     if(result) Command(result);
 }
 void Command(int id) {
+    if(ProfileMenuCommand(id))return;
     switch(id) {
     case IdEdit:ShowControl();break;
     case IdEnglish:SwitchLanguage(Language::English);break;
@@ -839,7 +873,9 @@ void Command(int id) {
         AppendMenuW(menu,MF_STRING,IdExport,Tr(L"匯出整體配置（含圖片）…"));
         AppendMenuW(menu,MF_STRING,IdImportReplace,Tr(L"匯入 JSON：覆蓋配置…"));
         AppendMenuW(menu,MF_STRING,IdImportMerge,Tr(L"匯入 JSON：合併配置…"));
+        app.popupActive=true;
         int chosen=TrackPopupMenu(menu,TPM_RETURNCMD|TPM_RIGHTBUTTON,r.left,r.bottom,0,app.control,nullptr);
+        app.popupActive=false;
         DestroyMenu(menu);if(chosen)Command(chosen);break;
     }
     case IdAdd: {
@@ -879,13 +915,14 @@ void Command(int id) {
             for(auto& t:app.tiles) {minX=std::min(minX,t.position.x);minY=std::min(minY,t.position.y);maxX=std::max(maxX,t.position.x+t.size);maxY=std::max(maxY,t.position.y+TileHeight(t.size,t.shape));cellW=std::max(cellW,PixelWidth(t)+6);cellH=std::max(cellH,PixelHeight(t)+6);}
             bool fits=maxX-minX<area.right-area.left-40 && maxY-minY<area.bottom-area.top-40;
             int i=0,columns=std::max(1,int((area.right-area.left-40)/cellW));
+            app.hidden.clear();
             for(auto& t:app.tiles) {
                 t.position=fits?t.position+Point{area.left+20-minX,area.top+20-minY}:
                     Point{double(area.left+20+(i%columns)*cellW),double(area.top+20+(i/columns)*cellH)};
                 SetLayer(t,true);++i;
             }
         }
-        SaveState();Repaint();Status(Tr(L"已將圖形移至主螢幕並置頂。")); break;
+        SaveState();UpdateAnimation();RefreshControls();Repaint();Status(Tr(L"已將圖形移至主螢幕並置頂。")); break;
     }
     case IdExit:
         if(app.sharedClock) TickTimers();SaveState();
@@ -1288,9 +1325,14 @@ void ValidateAsset(const Asset& asset) {
         picture->GetWidth()>0 && picture->GetHeight()>0 && static_cast<unsigned long long>(picture->GetWidth())*picture->GetHeight()<=64000000;}
     stream->Release();if(!valid)throw std::runtime_error("內嵌圖片損壞或解析度超過 6400 萬像素");
 }
+#include "win32_layouts.hpp"
+#include "win32_layout_commands.hpp"
 bool ExportConfig(const fs::path& requested) {
     try {
         auto path=fs::absolute(requested);auto extension=path.extension().wstring();
+        for(const auto& reserved:{CatalogPath(),CatalogBackup(),app.directory/L"ui-settings.json"})
+            if(CompareStringOrdinal(fs::weakly_canonical(path).c_str(),-1,fs::weakly_canonical(reserved).c_str(),-1,TRUE)==CSTR_EQUAL)
+                throw std::runtime_error("Choose a different name; this file belongs to DeskTiles.");
         std::transform(extension.begin(),extension.end(),extension.begin(),[](wchar_t c){return static_cast<wchar_t>(towlower(c));});
         if(extension!=L".json")throw std::runtime_error("匯出檔案必須使用 .json 副檔名");
         Log(Tr(L"JSON 匯出輸入：")+app.statePath.wstring()+Tr(L"；輸出：")+path.wstring());
@@ -1337,17 +1379,19 @@ bool ImportConfig(const fs::path& requested,bool merge) {
                 if(ReadBytes(imagePath,ImageLimit)!=item.second.bytes)throw std::runtime_error("既有圖片資源內容不符");
             }else AtomicOutput(imagePath,[&](std::ostream& out){out.write(item.second.bytes.data(),static_cast<std::streamsize>(item.second.bytes.size()));});
         }
+        const auto previousHidden=app.hidden;
+        if(!merge)app.hidden.clear();
         app.tiles=candidate;SaveState();
-        if(app.savingFailed){app.tiles=previous;throw std::runtime_error("配置儲存失敗，已保留原版面");}
+        if(app.savingFailed){app.tiles=previous;app.hidden=previousHidden;throw std::runtime_error("配置儲存失敗，已保留原版面");}
         auto oldViews=std::move(app.views);app.views.clear();
         try {for(auto& tile:app.tiles)CreateTileWindow(tile);}
         catch(...) {
             for(auto& view:app.views)DestroyWindow(view.second.window);app.views.clear();
-            app.views=std::move(oldViews);app.tiles=previous;SaveState();throw;
+            app.views=std::move(oldViews);app.tiles=previous;app.hidden=previousHidden;SaveState();throw;
         }
         for(auto& view:oldViews)DestroyWindow(view.second.window);oldViews.clear();
         app.selection.clear();for(auto& tile:app.tiles)if(!merge || !previousIds.count(tile.id))app.selection.insert(tile.id);
-        app.primary=app.selection.empty()?0:*app.selection.begin();app.nextId=1;for(const auto& t:app.tiles)app.nextId=std::max(app.nextId,t.id+1);
+        app.primary=app.selection.empty()?0:*app.selection.begin();if(!app.profileMode)app.nextId=1;for(const auto& t:app.tiles)app.nextId=std::max(app.nextId,t.id+1);
         UpdateClock();UpdateAnimation();RefreshControls();Repaint();
         Status(Tr(L"[JSON 匯入 4/4] ")+std::wstring(merge?Tr(L"合併"):Tr(L"覆蓋"))+Tr(L"完成；共 ")+std::to_wstring(app.tiles.size())+TrCounted(L" 格。",app.tiles.size())+
             (missingFonts?Tr(L" 部分字體使用系統替代字體。"):L""));return true;
@@ -1516,7 +1560,9 @@ LRESULT CALLBACK TileProc(HWND window,UINT message,WPARAM w,LPARAM l) {
     case WM_PAINT: {
         ++app.paintCount;
         PAINTSTRUCT paint;HDC dc=BeginPaint(window,&paint);
-        RECT clear;GetClientRect(window,&clear);PatBlt(dc,0,0,clear.right,clear.bottom,BLACKNESS);if(auto* tile=Find(id))PresentTile(*tile);EndPaint(window,&paint);return 0;
+        RECT clear;GetClientRect(window,&clear);PatBlt(dc,0,0,clear.right,clear.bottom,BLACKNESS);
+        auto view=app.views.find(id);if(view!=app.views.end()&&view->second.window==window)if(auto* tile=Find(id))PresentTile(*tile);
+        EndPaint(window,&paint);return 0;
     }
     case WM_PRINTCLIENT:if(auto* tile=Find(id)) DrawTile(reinterpret_cast<HDC>(w),*tile);return 0;
     case WM_APP+17:
@@ -1579,6 +1625,7 @@ LRESULT CALLBACK ControlProc(HWND window,UINT message,WPARAM w,LPARAM l) {
         } else if(LOWORD(w)==IdType && HIWORD(w)==CBN_SELCHANGE) UpdateContentVisibility();
         else if(HIWORD(w)==BN_CLICKED) Command(LOWORD(w));
         return 0;
+    case WM_COPYDATA:return ReceiveLayoutCommand(reinterpret_cast<HWND>(w),reinterpret_cast<const COPYDATASTRUCT*>(l));
     case WM_TIMER:if(w==1) TickTimers();else if(w==2) SmokeTick();else if(w==3) AnimateBorders();return 0;
     case TrayMessage:
         if(l==WM_LBUTTONDBLCLK || l==WM_LBUTTONUP) ShowControl();
@@ -2133,6 +2180,25 @@ void SmokeTick() {
     try {
         if(app.smokeStep==0) {
             KillTimer(app.control,2);
+            if(app.trayLayoutOnly) {
+                const auto original=app.catalog.active;
+                auto next=CurrentCatalog();
+                auto second=CreateProfile(next,"Tray fixture",true);
+                ApplyCatalog(std::move(next));
+                struct Menu {HMENU value;~Menu(){DestroyMenu(value);}} menu{BuildTileMenu(true)};
+                HMENU profiles=GetSubMenu(menu.value,0);
+                SmokeCheck(profiles&&GetMenuItemCount(profiles)>=2&&(GetMenuState(profiles,0,MF_BYPOSITION)&MF_CHECKED)!=0,
+                    L"系統匣選單標示目前配置");
+                Command(static_cast<int>(GetMenuItemID(profiles,1)));
+                SmokeCheck(app.catalog.active==second&&app.views.empty(),L"系統匣選單切換至空配置並撤下舊視窗");
+                struct Menu nextMenu{BuildTileMenu(true)};
+                auto secondMenu=GetSubMenu(nextMenu.value,0);
+                SmokeCheck((GetMenuState(secondMenu,1,MF_BYPOSITION)&MF_CHECKED)!=0,L"系統匣勾選狀態隨配置切換");
+                Command(static_cast<int>(GetMenuItemID(secondMenu,0)));
+                SmokeCheck(app.catalog.active==original&&app.tiles.size()==3&&app.views.size()==3,L"系統匣切回舊配置並還原視窗");
+                AtomicOutput(app.directory/L"tray-layout-results.txt",[](std::ostream& out){out<<"PASS checks=4\n";});
+                app.smokeDone=true;Command(IdExit);return;
+            }
             SmokeCheck(app.tiles.size()==3,L"建立三個初始六角形");
             if(!app.interactionOnly)SmokeAlarmFeatures();
             if(app.featureOnly){app.smokeDone=true;PostQuitMessage(0);return;}
@@ -2332,35 +2398,15 @@ void SmokeTick() {
     }
 }
 bool ActivateExisting(const fs::path& lockPath) {
-    DWORD session=0;wchar_t key[CCH_RM_SESSION_KEY+1]{};
-    if(RmStartSession(&session,0,key)!=ERROR_SUCCESS)return false;
-    struct SessionGuard {DWORD handle;~SessionGuard(){RmEndSession(handle);}} guard{session};
-    auto name=lockPath.wstring();LPCWSTR file=name.c_str();
-    // Query owners only. Never shut down or restart another process.
-    if(RmRegisterResources(session,1,&file,0,nullptr,0,nullptr)!=ERROR_SUCCESS)return false;
-    UINT needed=0,count=0;DWORD reasons=0;std::vector<RM_PROCESS_INFO> processes;
-    DWORD result=RmGetList(session,&needed,&count,nullptr,&reasons);
-    for(int attempt=0;result==ERROR_MORE_DATA && attempt<3;++attempt) {
-        if(needed>4096)return false;processes.resize(needed);count=needed;
-        result=RmGetList(session,&needed,&count,processes.data(),&reasons);
-    }
-    if(result!=ERROR_SUCCESS || !count)return false;
-    struct Search {std::set<DWORD> owners;HWND window=nullptr;DWORD owner=0;} search;
-    for(UINT i=0;i<count;++i)search.owners.insert(processes[i].Process.dwProcessId);
-    EnumWindows([](HWND window,LPARAM context)->BOOL {
-        auto& found=*reinterpret_cast<Search*>(context);DWORD owner=0;GetWindowThreadProcessId(window,&owner);
-        if(!found.owners.count(owner))return TRUE;
-        wchar_t klass[128]{};GetClassNameW(window,klass,128);
-        if(wcscmp(klass,ControlClass)!=0)return TRUE;
-        found.window=window;found.owner=owner;return FALSE;
-    },reinterpret_cast<LPARAM>(&search));
-    if(!search.window)return false;
+    HWND window=desktiles_ipc::FindController(lockPath);
+    if(!window)return false;
+    DWORD owner=0;GetWindowThreadProcessId(window,&owner);
     DWORD_PTR response=0;
-    if(!SendMessageTimeoutW(search.window,WM_NULL,0,0,SMTO_ABORTIFHUNG|SMTO_BLOCK,1500,&response))return false;
-    AllowSetForegroundWindow(search.owner);
-    ShowWindowAsync(search.window,IsIconic(search.window)?SW_RESTORE:SW_SHOW);
-    HWND target=GetLastActivePopup(search.window);
-    if(!target || !IsWindowVisible(target))target=search.window;
+    if(!SendMessageTimeoutW(window,WM_NULL,0,0,SMTO_ABORTIFHUNG|SMTO_BLOCK,1500,&response))return false;
+    AllowSetForegroundWindow(owner);
+    ShowWindowAsync(window,IsIconic(window)?SW_RESTORE:SW_SHOW);
+    HWND target=GetLastActivePopup(window);
+    if(!target || !IsWindowVisible(target))target=window;
     if(!SetForegroundWindow(target)) {
         FLASHWINFO flash{sizeof(flash),target,FLASHW_TRAY,2,0};FlashWindowEx(&flash);
     }
@@ -2381,6 +2427,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         else if(std::wstring(argv[i])==L"--show-existing")showExisting=true;
         else if(std::wstring(argv[i])==L"--startup")app.startupLaunch=true;
         else if(std::wstring(argv[i])==L"--feature-test"){app.smoke=true;app.featureOnly=true;}
+        else if(std::wstring(argv[i])==L"--layouts-menu-test"){app.smoke=true;app.trayLayoutOnly=true;}
         else if(std::wstring(argv[i])==L"--demo-capture")app.demoCapture=true;
     }
     LocalFree(argv);
@@ -2411,17 +2458,19 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         app.progress=CreateWindowExW(WS_EX_TOPMOST|WS_EX_TOOLWINDOW,L"STATIC",L"",WS_POPUP|WS_BORDER|SS_LEFT,
             130,130,1000,235,nullptr,nullptr,instance,nullptr);
         SendMessageW(app.progress,WM_SETFONT,reinterpret_cast<WPARAM>(app.font),TRUE);
+        if(fs::exists(CatalogPath()))app.statePath=CatalogPath();
         Log(Tr(L"輸入絕對路徑：")+app.statePath.wstring());
         Log(Tr(L"輸出絕對路徑：")+app.statePath.wstring()+L"；"+app.logPath.wstring());
         Progress(1,Tr(L"確認輸入與輸出路徑"));ShowWindow(app.progress,SW_SHOWNORMAL);UpdateWindow(app.progress);
         GdiplusStartupInput startup;if(GdiplusStartup(&gdiplus,&startup,nullptr)!=Ok) throw std::runtime_error("GDI+ 初始化失敗");
         app.icon=CreateAppIcon();app.smallIcon=CreateAppIcon(16);app.brandIcon=CreateAppIcon(64);
         Progress(2,Tr(L"載入版面與內容"));
-        if(fs::exists(app.statePath)) {
+        ActivateStoredProfiles();
+        if(!app.profileMode && fs::exists(app.statePath)) {
             if(fs::file_size(app.statePath)>40*1024*1024) throw std::runtime_error("版面檔案過大，已保留原始檔案");
             std::ifstream input(app.statePath,std::ios::binary);app.tiles=Load(input);
             for(auto& t:app.tiles) {Wide(t.text);Wide(t.image);Wide(t.fontFamily);app.nextId=std::max(app.nextId,t.id+1);}
-        } else {
+        } else if(!app.profileMode) {
             RECT area;SystemParametersInfoW(SPI_GETWORKAREA,0,&area,0);
             Point base{double(area.left+90),double(area.top+160)};
             for(int i=0;i<3;++i) {
@@ -2433,7 +2482,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
             }
             app.nextId=4;
         }
-        for(auto& tile:app.tiles)if(tile.kind==Kind::Alarm)ArmAlarm(tile.alarm,static_cast<std::int64_t>(std::time(nullptr)));
+        if(!app.profileMode)for(auto& tile:app.tiles)if(tile.kind==Kind::Alarm)ArmAlarm(tile.alarm,static_cast<std::int64_t>(std::time(nullptr)));
         Progress(3,Tr(L"建立 Windows 顯示與控制視窗"));
         WNDCLASSW tileClass{};tileClass.hInstance=instance;tileClass.lpszClassName=TileClass;
         tileClass.lpfnWndProc=TileProc;tileClass.hCursor=LoadCursor(nullptr,IDC_ARROW);tileClass.style=CS_DBLCLKS;
@@ -2463,7 +2512,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         if(!app.tiles.empty()){app.primary=app.tiles.front().id;app.selection={app.primary};}
         Progress(4,Tr(L"準備系統匣與操作選單"));
         app.taskbarCreated=RegisterWindowMessageW(L"TaskbarCreated");AddTray();
-        RefreshControls();Repaint();SaveState();UpdateAnimation();
+        RefreshControls();Repaint();SaveState();UpdateAnimation();UpdateClock();app.cliReady=!app.smoke;
         Progress(5,Tr(L"完成，等待操作"));DestroyWindow(app.progress);app.progress=nullptr;
         if(!app.startupLaunch)ShowControl();
         if(app.smoke) SetTimer(app.control,2,350,nullptr);
