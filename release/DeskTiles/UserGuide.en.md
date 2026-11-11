@@ -91,3 +91,23 @@ Before updating, save and exit the old version, then open the new executable. St
 ```
 
 The app logs absolute input/output paths and progress in `session.log`. Layout backups include `layout.backup` and pre-import backups. Windows system file/color dialogs use the language resources available in Windows.
+
+
+## Windows: desktop layouts and CLI
+
+Open **Desktop layouts** from the tray menu to save a copy, create an empty layout, rename the active layout or switch to a saved one. The checked entry is the visible layout and is restored on next launch. Switching changes which tiles are visible. Timers and alarms in other layouts still run, and reminders include the layout name. A saved copy pauses its timers and disables its alarms to avoid duplicate reminders.
+
+Start DeskTiles.exe first. Run `desktiles-cli.exe --help` in CMD, or `./desktiles-cli.exe --help` in PowerShell. For example:
+
+```text
+desktiles-cli.exe layout list
+desktiles-cli.exe layout switch "Work"
+desktiles-cli.exe tile list
+desktiles-cli.exe tile add --shape hexagon --text "Today"
+desktiles-cli.exe tile update --id 1 --text "Done"
+desktiles-cli.exe tile hide --id 1
+desktiles-cli.exe tile show --id 1
+desktiles-cli.exe tile delete --id 1
+```
+
+Replace `1` with the ID from `tile list`. Use `--layout NAME` to target a layout without switching to it. If the app uses a custom data directory, put `--data-dir PATH` before the CLI command and use the same path.
