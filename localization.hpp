@@ -150,6 +150,7 @@ inline constexpr Translation Catalog[]={
     {L"只影響背景；文字、圖片與邊框保持原樣。\r\n完全透明處仍可選取、拖曳和使用右鍵選單。",L"Text, images and borders keep their opacity.\r\nTransparent areas still support dragging and right-click."},
     {L"合併",L"Merge"},
     {L"單色呼吸燈",L"Breathing"},
+    {L"普通磁磚",L"Ceramic tile"},
     {L"隱藏編號與狀態標籤",L"Hide tile ID and status labels"},
     {L"調整照片裁切…",L"Adjust photo crop…"},
     {L"矩形高度（留空為 3:2）",L"Rectangle height (blank for 3:2)"},

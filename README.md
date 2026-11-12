@@ -8,7 +8,7 @@ DeskTiles puts notes, images, and timers into draggable hexagons, triangles, and
 
 | Platform | Version | Download |
 | --- | --- | --- |
-| Windows 10 / 11 x64 | v1.05 | [Portable ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles-Windows-x64.zip) · [DeskTiles.exe only](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles/DeskTiles.exe) |
+| Windows 10 / 11 x64 | v1.06 | [Portable ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.06/release/DeskTiles-Windows-x64.zip) · [DeskTiles.exe only](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.06/release/DeskTiles/DeskTiles.exe) |
 | macOS 12+ (Apple silicon / Intel) | v1.02 | [Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip) |
 
 **Windows:** Extract the complete ZIP and open `DeskTiles.exe`. Use the ZIP if you want `desktiles-cli.exe`, the guides, and the example layout. The portable app needs no installer, administrator rights, or separate runtime. To update, choose **Save and exit DeskTiles** from the tray before opening the replacement. Closing the control panel keeps the app running.
@@ -97,7 +97,7 @@ The source build requires Windows x64, PowerShell, Visual Studio with the C++ de
 
 The build and verification scripts print absolute input/output paths and stage progress. Tests use isolated data directories. Optional checks include `verify-language.ps1`, `verify-activation.ps1`, `verify-interaction.ps1`, `verify-features.ps1`, `verify-icons.ps1`, and `verify-package.ps1 -Composition`. Desktop composition tests require an interactive Windows desktop with Explorer; the optional Python-based tests also require their documented dependencies.
 
-Windows v1.05 passed 228 core checks, 192 checks on the unpacked Windows package, and 38 named-layout/CLI integration checks, including a background alarm after restart.
+Windows v1.06 passed 235 core checks, 192 checks on the unpacked Windows package, and 38 named-layout/CLI integration checks, including a background alarm after restart.
 
 | Path | Purpose |
 | --- | --- |
@@ -109,6 +109,12 @@ Windows v1.05 passed 228 core checks, 192 checks on the unpacked Windows package
 | `DeskTile_mac/` | Native AppKit implementation and Mac package. |
 
 The Windows app uses C++17, Win32, and GDI+. Tile input regions remain interactive even with a transparent background; the desktop layer depends on Explorer. JSON uses the bundled [nlohmann/json v3.12.0](https://github.com/nlohmann/json/releases/tag/v3.12.0). A Linux build is not currently available.
+
+## Ceramic tile borders
+
+New tiles default to **Ceramic tile**, a static beveled border with a lit upper-left edge and shaded lower-right edge. The default is a black background with white text and a white bevel. In **Border style…**, set the border color and a width of 1–12 px, then apply to the selected tiles. Solid, pixel, RGB, and breathing are still available; saved tiles retain their existing style. The bevel follows the shape without changing its hit area or filling transparent backgrounds.
+
+The renderer builds one inset face per edge from the tile outline, shades it by direction, then draws the existing selection markers separately. Run `./verify-bevel.ps1` after building. It prints the absolute test paths and verifies the default, the border menu, rendered pixels, saved style and preview output in an isolated `build/bevel-test-*` directory. Older app builds cannot read the new ceramic style; choose an older border style before exporting a layout for those builds.
 
 ## Sage desktop layout (Windows)
 

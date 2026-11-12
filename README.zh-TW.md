@@ -2,7 +2,7 @@
 
 [English](README.md) · **繁體中文**
 
-**下載：** [Windows v1.05 免安裝 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles-Windows-x64.zip) · [僅下載 DeskTiles.exe](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles/DeskTiles.exe) · [macOS v1.02 Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip)
+**下載：** [Windows v1.06 免安裝 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.06/release/DeskTiles-Windows-x64.zip) · [僅下載 DeskTiles.exe](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.06/release/DeskTiles/DeskTiles.exe) · [macOS v1.02 Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip)
 
 Windows ZIP 同時包含命令列工具與使用說明。
 
@@ -86,7 +86,7 @@ Portfolio 網站管理員的上架資料與素材來源見 [網站上架交接](
 - 文字、PNG／JPEG／BMP 圖片、正向／倒數計時器；多選可批次套用。
 - 多選保持相對位置、混合形狀碰撞檢查與 22 px 範圍吸附；重疊放置回復原位。
 - 自訂尺寸、字體、字級、文字顏色；縮放造成碰撞時整批保留原設定。
-- 邊框實色、像素、RGB 彩虹與指定色呼吸燈；厚度 1～12 px，動畫週期 2～60 秒。
+- 邊框預設為普通磁磚，也可選實色、像素、RGB 彩虹與指定色呼吸燈；厚度 1～12 px，動畫週期 2～60 秒。
 - 背景顏色及 0～100% 透明度獨立套用。只影響背景；全透明區仍可選取和拖曳。
 - 控制介面 18 px、標題 32 px，黑白圓角幾何 2×2 Logo；內容字級另行設定。
 - JSON 含全版面與 Base64 圖片，支援覆蓋及合併；匯入格子的計時器預設暫停。
@@ -223,8 +223,8 @@ Mac build.sh 先列出絕對路徑並執行核心檢查，建立標準／Retina 
 
 GitHub 的 macOS verified package 工作流程在圖示更新分支建置與驗證，再將通過的 ZIP、ICNS 與 SHA256 提交回相同分支；下載版只有在驗證通過後才整合至 main。workflow_dispatch 亦可手動重建。App 仍未申請 Apple 公證，Intel 硬體、多螢幕與各版本 macOS 的實機驗收限制沿用原版。
 
-Windows v1.05 已驗證重啟後的背景鬧鐘；程式關閉期間錯過的提醒不會補播。圖示更新不更動使用者版面或自動啟動設定。
-Windows 正式版為 v1.05，包含多套桌面配置與 CMD／PowerShell 命令列。macOS 維持 v1.02。兩平台的 Logo 皆沿用深灰細圈與透明外角。Windows PowerShell 腳本使用 UTF-8 BOM 以支援內建 5.1。
+Windows v1.06 已驗證重啟後的背景鬧鐘；程式關閉期間錯過的提醒不會補播。圖示更新不更動使用者版面或自動啟動設定。
+Windows 正式版為 v1.06，包含多套桌面配置與 CMD／PowerShell 命令列。macOS 維持 v1.02。兩平台的 Logo 皆沿用深灰細圈與透明外角。Windows PowerShell 腳本使用 UTF-8 BOM 以支援內建 5.1。
 
 圖示回歸：powershell -NoProfile -ExecutionPolicy Bypass -File verify-icons.ps1 -ExecutablePath <EXE絕對路徑>。腳本先列出圖示、EXE與結果絕對位置，逐尺寸檢查九個ICO的解碼、透明角落及平滑邊緣，再比對打包EXE內嵌圖示的每一個位元組並實際呼叫Windows圖示載入；結果存於build/icon-verification.txt。
 
@@ -263,6 +263,12 @@ desktiles-cli.exe tile delete --id 1
 4. `build.ps1` 依序定位工具鏈、編譯 GUI、編譯 CLI、執行核心測試及核對輸出。 `verify-layouts-cli.ps1` 使用獨立資料目錄，驗證 CMD、PowerShell、系統匣、重啟、儲存回復、背景倒數及實際鬧鐘。 `package.ps1` 將 GUI 和 CLI 一起打包；驗證腳本會列出絕對輸入／輸出路徑及各階段進度。
 
 此功能目前適用 Windows；macOS 套件尚未包含多套配置及這個 CLI。
+
+## 普通磁磚邊框
+
+新方塊預設使用「普通磁磚」。預設黑底、白字與白色邊框，左上亮面與右下暗面呈現靜態斜邊稜角。在「邊框與風格…」可設定邊框色碼及 1～12 px 厚度，並套用到所選方塊。既有方塊保留原風格，一般實色、像素、RGB 與呼吸燈仍可選。稜角只作用於邊框，透明背景與滑鼠命中區域不變。
+
+繪製流程：依輪廓建立內外兩圈 → 各邊依方向繪製亮暗斜面 → 另繪選取標記。建置後可執行 `./verify-bevel.ps1`；會先列出絕對路徑並分階段驗證預設、選單、繪製像素、存檔及預覽。若要把版面匯出給舊版程式，請先換成舊版可辨識的邊框風格。
 
 ## 鼠尾草綠桌面配置（Windows）
 

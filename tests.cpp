@@ -63,12 +63,39 @@ int main(int argc,char** argv) {
         std::stringstream legacy("HEXDESK 1\n1\n7 100 200 0 0 1 300 0 \"舊版文字\" \"\"\n");
         auto migrated=Load(legacy);
         Check(migrated[0].text=="舊版文字" && migrated[0].borderStyle==BorderStyle::Solid &&
-            migrated[0].borderWidth==2 && !migrated[0].topmost,"legacy defaults preserve existing content");
+            migrated[0].borderWidth==2 && migrated[0].borderColor==0x485F69 &&
+            migrated[0].textColor==0xEBF4F5 && migrated[0].backgroundColor==0x172730 && !migrated[0].topmost,"legacy defaults preserve existing content");
         std::stringstream previous("HEXDESK 2\n1\n7 100 200 2 0 1 300 0 \"舊版\" \"\" 2 123456 4 12 0\n");
         auto previousVersion=Load(previous);
         Check(previousVersion[0].size==160 && previousVersion[0].fontSize==22 &&
             previousVersion[0].borderStyle==BorderStyle::Rgb && previousVersion[0].borderWidth==4 &&
             previousVersion[0].textColor==0x71EDC4,"v2 preserves borders and timer defaults");
+        Tile ceramic;ceramic.id=9;
+        Check(ceramic.borderStyle==BorderStyle::Ceramic&&ceramic.borderWidth==6&&!AnimatedBorder(ceramic)&&
+            ceramic.borderColor==0xFFFFFF&&ceramic.textColor==0xFFFFFF&&ceramic.backgroundColor==0x000000,
+            "new tiles start with a black background, white text and a static white ceramic bevel");
+        for(auto shape:{Shape::Hexagon,Shape::Triangle,Shape::Rectangle}){
+            ceramic.shape=shape;
+            const auto faces=CeramicBevel(ceramic);
+            auto colors=std::set<std::uint32_t>{};
+            for(const auto& face:faces)colors.insert(face.color);
+            const size_t sides=shape==Shape::Hexagon?6:shape==Shape::Triangle?3:4;
+            Check(faces.size()==sides&&colors.size()>1,"ceramic bevel follows each shape with directional shading");
+        }
+        auto defaultFaces=CeramicBevel(ceramic);
+        ceramic.borderWidth=10;ceramic.borderColor=0x123456;
+        auto adjustedFaces=CeramicBevel(ceramic);
+        Check(adjustedFaces[0].corners[2].y>defaultFaces[0].corners[2].y&&
+            adjustedFaces[0].color!=defaultFaces[0].color,"ceramic width and color change the bevel");
+        Tile plain=ceramic;plain.id=10;plain.position={600,0};plain.borderStyle=BorderStyle::Solid;
+        std::stringstream bevelSave;Save(bevelSave,{ceramic,plain});
+        auto bevelLoaded=Load(bevelSave);
+        Check(SameAppearance(bevelLoaded[0],ceramic)&&SameAppearance(bevelLoaded[1],plain),
+            "ceramic and legacy solid survive native save separately");
+        Bundle bevelBundle;bevelBundle.tiles={ceramic,plain};
+        auto bevelJson=ReadBundle(BundleJson(bevelBundle));
+        Check(SameAppearance(bevelJson.tiles[0],ceramic)&&SameAppearance(bevelJson.tiles[1],plain),
+            "ceramic and legacy solid survive JSON separately");
         std::cout << "[5/12] Border colors, animation and pixel geometry\n";
         std::uint32_t color=0;
         Check(ParseColor("#aBcD01",color) && color==0xABCD01 && ColorText(color)=="#ABCD01","hex color roundtrip");

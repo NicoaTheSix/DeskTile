@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
@@ -22,7 +23,7 @@ inline Point operator+(Point a, Point b) { return {a.x + b.x, a.y + b.y}; }
 inline Point operator-(Point a, Point b) { return {a.x - b.x, a.y - b.y}; }
 enum class Kind { Text, Image, Timer, Alarm };
 enum class Shape { Hexagon, Triangle, Rectangle };
-enum class BorderStyle { Solid, Pixel, Rgb, Breathing };
+enum class BorderStyle { Solid, Pixel, Rgb, Breathing, Ceramic };
 struct Tile {
     int id = 0;
     Point position;
@@ -35,15 +36,15 @@ struct Tile {
     bool countdown = true;
     double duration = 300, elapsed = 0;
     bool running = false, notified = false;
-    BorderStyle borderStyle = BorderStyle::Solid;
-    std::uint32_t borderColor = 0x485F69;
-    double borderWidth = 2, rgbCycleSeconds = 6;
+    BorderStyle borderStyle = BorderStyle::Ceramic;
+    std::uint32_t borderColor = 0xFFFFFF;
+    double borderWidth = 6, rgbCycleSeconds = 6;
     bool rgbAnimated = true;
     double size = Width;
     std::string fontFamily = "Microsoft JhengHei UI";
     double fontSize = 14;
-    std::uint32_t textColor = 0xEBF4F5;
-    std::uint32_t backgroundColor = 0x172730;
+    std::uint32_t textColor = 0xFFFFFF;
+    std::uint32_t backgroundColor = 0x000000;
     double backgroundTransparency = 0;
     double rectangleHeight = 0;
     Point photoFocus{.5,.5};
@@ -159,6 +160,31 @@ inline std::vector<Point> ContactBoundary(double fixedSize,double movingSize,Sha
     for(size_t i=points.size()-1;i-->0;){auto p=points[i];while(hull.size()>lower && Cross(hull[hull.size()-2],hull.back(),p)<=1e-8)hull.pop_back();hull.push_back(p);}
     hull.pop_back();return hull;
 }
+// Each face is a trapezoid between two parallel polygon outlines. The
+// outer shape and its input region are unchanged; only the bevel is painted.
+struct BevelFace {
+    std::array<Point,4> corners;
+    std::uint32_t color;
+};
+inline std::vector<BevelFace> CeramicBevel(const Tile& tile) {
+    const auto outer=BorderOutline(BorderStyle::Solid,2,tile.size,tile.shape,tile.rectangleHeight);
+    const auto inner=BorderOutline(BorderStyle::Solid,2+tile.borderWidth,tile.size,tile.shape,tile.rectangleHeight);
+    std::vector<BevelFace> faces;faces.reserve(outer.size());
+    for(size_t i=0;i<outer.size();++i) {
+        const size_t j=(i+1)%outer.size();
+        const double dx=outer[j].x-outer[i].x,dy=outer[j].y-outer[i].y;
+        // Tile coordinates point down; the light comes from the upper left.
+        const double light=(dx-dy)/(std::sqrt(2.0)*std::hypot(dx,dy));
+        const double strength=light>=0?light*.60:-light*.58;
+        auto channel=[&](unsigned shift){
+            const double base=(tile.borderColor>>shift)&255;
+            return static_cast<std::uint32_t>(std::lround(base+((light>=0?255:0)-base)*strength));
+        };
+        faces.push_back({{outer[i],outer[j],inner[j],inner[i]},(channel(16)<<16)|(channel(8)<<8)|channel(0)});
+    }
+    return faces;
+}
+
 inline std::vector<Point> Neighbors(double fixedSize=Width,double movingSize=Width,
         Shape fixedShape=Shape::Hexagon,Shape movingShape=Shape::Hexagon,const Point* preferred=nullptr,double fixedHeight=0,double movingHeight=0) {
     if(fixedShape!=Shape::Hexagon || movingShape!=Shape::Hexagon) {
@@ -313,6 +339,10 @@ inline std::vector<Tile> Load(std::istream& in) {
     std::vector<Tile> result; std::set<int> ids;
     for (size_t i=0;i<count;++i) {
         Tile t; int kind=0, top=0, down=0;
+        // Keep the original appearance where older formats omitted these fields.
+        if(version<2){t.borderStyle=BorderStyle::Solid;t.borderColor=0x485F69;t.borderWidth=2;}
+        if(version<3)t.textColor=0xEBF4F5;
+        if(version<4)t.backgroundColor=0x172730;
         if (!(in>>t.id>>t.position.x>>t.position.y>>kind>>top>>down
               >>t.duration>>t.elapsed>>std::quoted(t.text)>>std::quoted(t.image)) ||
             t.id<=0 || t.id>1000000 || !ids.insert(t.id).second || kind<0 || kind>(version>=6?3:2) ||
@@ -327,7 +357,7 @@ inline std::vector<Tile> Load(std::istream& in) {
         if(version>=2) {
             int style=0,animated=0;
             if(!(in>>style>>t.borderColor>>t.borderWidth>>t.rgbCycleSeconds>>animated) ||
-                style<0 || style>(version>=4?3:2) || t.borderColor>0xFFFFFF || !std::isfinite(t.borderWidth) ||
+                style<0 || style>(version>=6?static_cast<int>(BorderStyle::Ceramic):version>=4?3:2) || t.borderColor>0xFFFFFF || !std::isfinite(t.borderWidth) ||
                 t.borderWidth<1 || t.borderWidth>12 || !std::isfinite(t.rgbCycleSeconds) ||
                 t.rgbCycleSeconds<2 || t.rgbCycleSeconds>60 || (animated!=0 && animated!=1))
                 throw std::runtime_error("六角形外觀資料損壞，已保留原始檔案");

@@ -150,7 +150,7 @@ struct App {
     fs::path directory,statePath,logPath;
     std::ofstream log;
     bool loadingControls=false,dragging=false,moved=false,savingFailed=false,exiting=false;
-    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false,trayLayoutOnly=false,sageOnly=false;
+    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false,trayLayoutOnly=false,bevelOnly=false,sageOnly=false;
     std::map<HWND,const Translation*> uiLabels;
     Point dragStart,dragDelta;
     HWND dragWindow=nullptr;
@@ -328,7 +328,14 @@ void DrawBorder(Graphics& g,const Tile& tile) {
     g.SetSmoothingMode(pixel?Gdiplus::SmoothingModeNone:SmoothingModeAntiAlias);
     float width=static_cast<float>(tile.borderWidth);
     std::unique_ptr<GraphicsPath> path(OutlinePath(tile.borderStyle,width/2+2,tile.size,tile.shape,tile.rectangleHeight));
-    if(tile.borderStyle==BorderStyle::Rgb) {
+    if(tile.borderStyle==BorderStyle::Ceramic) {
+        for(const auto& face:CeramicBevel(tile)) {
+            PointF points[4];
+            for(size_t i=0;i<4;++i)points[i]={static_cast<float>(face.corners[i].x),static_cast<float>(face.corners[i].y)};
+            SolidBrush brush(BorderColor(face.color));
+            g.FillPolygon(&brush,points,4);
+        }
+    } else if(tile.borderStyle==BorderStyle::Rgb) {
         Pen glow(Color(55,130,185,255),width+4);g.DrawPath(&glow,path.get());
         auto corners=BorderOutline(BorderStyle::Solid,width/2+2,tile.size,tile.shape,tile.rectangleHeight);
         double seconds=app.animationSecondsOverride>=0?app.animationSecondsOverride:
@@ -1004,7 +1011,7 @@ bool ApplyAppearance() {
     Status(Tr(L"[邊框 1/3] 檢查顏色、厚度與風格"));
     int style=static_cast<int>(SendMessageW(f[IdBorderStyle],CB_GETCURSEL,0,0));
     std::uint32_t color=0;double width=0,cycle=0;
-    if(style<0 || style>3 || !ParseColor(Utf8(TextOf(f[IdBorderColor])),color)) {
+    if(style<0 || style>static_cast<int>(BorderStyle::Ceramic) || !ParseColor(Utf8(TextOf(f[IdBorderColor])),color)) {
         Error(Tr(L"顏色請輸入六位十六進位，例如 #66ECC1。"));return false;
     }
     if(!ReadNumber(f[IdBorderWidth],1,12,width)) {Error(Tr(L"邊框厚度請輸入 1～12 像素。"));return false;}
@@ -1044,7 +1051,7 @@ void ShowAppearance() {
         field(220,L"STATIC",L"",0,22,20,406,25);
         field(222,L"STATIC",Tr(L"邊框風格"),0,22,65,110,24);
         field(IdBorderStyle,L"COMBOBOX",L"",CBS_DROPDOWNLIST|WS_TABSTOP,142,60,280,150);
-        for(auto name:{Tr(L"一般實色"),Tr(L"像素風"),Tr(L"RGB 動態燈條"),Tr(L"單色呼吸燈")})
+        for(auto name:{Tr(L"一般實色"),Tr(L"像素風"),Tr(L"RGB 動態燈條"),Tr(L"單色呼吸燈"),Tr(L"普通磁磚")})
             SendMessageW(app.appearanceWidgets[IdBorderStyle],CB_ADDSTRING,0,reinterpret_cast<LPARAM>(name));
         field(223,L"STATIC",Tr(L"邊框顏色"),0,22,112,110,24);
         field(IdBorderColor,L"EDIT",L"#485F69",WS_TABSTOP|ES_AUTOHSCROLL,142,106,157,30);
@@ -1557,7 +1564,7 @@ bool SwitchLanguage(Language value,bool persist) {
     ResetChoices(app.widgets[IdNewShape],{L"六角形（預設）",L"三角形",L"矩形（3:2）"});
     ResetChoices(app.widgets[IdType],{L"文字",L"圖片",L"計時器",L"鬧鐘"});
     ResetChoices(app.widgets[IdMode],{L"倒數計時",L"正向計時"});
-    if(app.appearance)ResetChoices(app.appearanceWidgets[IdBorderStyle],{L"一般實色",L"像素風",L"RGB 動態燈條",L"單色呼吸燈"});
+    if(app.appearance)ResetChoices(app.appearanceWidgets[IdBorderStyle],{L"一般實色",L"像素風",L"RGB 動態燈條",L"單色呼吸燈",L"普通磁磚"});
     if(app.alarmControl)ResetChoices(app.alarmWidgets[IdAlarmRepeat],{L"單次",L"每天",L"指定星期"});
     RefreshControls();RestoreUiDrafts(drafts);
     SendMessageW(app.widgets[IdLanguage],CB_SETCURSEL,language==Language::English?1:0,0);
@@ -2289,6 +2296,62 @@ void SmokeTick() {
         if(app.smokeStep==0) {
             KillTimer(app.control,2);
             if(app.sageOnly){SmokeSageLayout();app.smokeDone=true;Command(IdExit);return;}
+            if(app.bevelOnly){
+                Status(L"[磁磚驗證 1/3] 檢查新格預設");
+                const auto hasDefaultAppearance=[](const Tile& t){
+                    return t.borderStyle==BorderStyle::Ceramic&&t.borderWidth==6&&
+                        t.borderColor==0xFFFFFF&&t.textColor==0xFFFFFF&&t.backgroundColor==0x000000;
+                };
+                SmokeCheck(app.tiles.size()==3&&std::all_of(app.tiles.begin(),app.tiles.end(),hasDefaultAppearance),
+                    L"初始格預設為黑底白字的普通磁磚");
+                AddTile(Shape::Rectangle);
+                SmokeCheck(app.tiles.size()==4&&hasDefaultAppearance(app.tiles.back()),L"控制視窗新增的格子採黑白磁磚");
+                app.selection={app.tiles[0].id,app.tiles[1].id};app.primary=app.tiles[0].id;
+                ShowAppearance();
+                auto list=app.appearanceWidgets[IdBorderStyle];
+                SendMessageW(list,CB_SETCURSEL,0,0);
+                SmokeCheck(ApplyAppearance()&&app.tiles[0].borderStyle==BorderStyle::Solid&&app.tiles[1].borderStyle==BorderStyle::Solid,
+                    L"既有實色仍可選擇並批次套用");
+                SendMessageW(list,CB_SETCURSEL,static_cast<WPARAM>(BorderStyle::Ceramic),0);
+                SmokeCheck(ApplyAppearance()&&app.tiles[0].borderStyle==BorderStyle::Ceramic&&app.tiles[1].borderStyle==BorderStyle::Ceramic&&!app.animationTimer,
+                    L"普通磁磚可批次套用且不啟動動畫");
+                Status(L"[磁磚驗證 2/3] 檢查實際繪製像素");
+                app.selection.clear();app.primary=0;
+                for(size_t i=0;i<3;++i){
+                    auto& tile=app.tiles[i];tile.kind=Kind::Text;tile.text="Ceramic tile";
+                    tile.shape=static_cast<Shape>(i);tile.position={40.+i*185,60};
+                    UpdateTileRegion(tile);Position(tile);
+                }
+                auto& rectangle=app.tiles[2];rectangle.backgroundTransparency=100;
+                Repaint();
+                auto& frame=RenderTile(rectangle);
+                const auto* pixels=static_cast<const Gdiplus::ARGB*>(frame.bits);
+                const auto pixel=[&](int x,int y){return Color(pixels[y*frame.width+x]);};
+                const auto upper=pixel(frame.width/2,4),lower=pixel(frame.width/2,frame.height-5),inside=pixel(20,15);
+                Log(L"Bevel sample ARGB: "+std::to_wstring(upper.GetValue())+L", "+
+                    std::to_wstring(lower.GetValue())+L", "+std::to_wstring(inside.GetValue()));
+                SmokeCheck(upper.GetA()>240&&lower.GetA()>240&&upper.GetR()>lower.GetR()+60&&inside.GetA()==0,
+                    L"渲染有明亮上緣與深色下緣，不填滿透明背景");
+                rectangle.backgroundTransparency=0;Repaint();
+                CapturePreview(L"-ceramic");
+                Status(L"[磁磚驗證 3/3] 核對稜角調整、儲存及預覽");
+                app.selection={app.tiles[0].id,app.tiles[1].id};app.primary=app.tiles[0].id;
+                ShowAppearance();
+                SetWindowTextW(app.appearanceWidgets[IdBorderColor],L"#123456");
+                SetWindowTextW(app.appearanceWidgets[IdBorderWidth],L"10");
+                const auto hasCustomBevel=[](const Tile& t){
+                    return t.borderStyle==BorderStyle::Ceramic&&t.borderColor==0x123456&&t.borderWidth==10;
+                };
+                SmokeCheck(ApplyAppearance()&&hasCustomBevel(app.tiles[0])&&hasCustomBevel(app.tiles[1])&&
+                    hasDefaultAppearance(rectangle),L"稜角邊框的顏色與厚度可批次調整");
+                SaveState();
+                std::ifstream saved(app.statePath,std::ios::binary);auto tiles=Load(saved);
+                SmokeCheck(tiles.size()==4&&hasCustomBevel(tiles[0])&&hasCustomBevel(tiles[1])&&
+                    hasDefaultAppearance(tiles[2]),L"存檔保留預設和自訂的普通磁磚");
+                SmokeCheck(fs::is_regular_file(app.directory/L"tiles-preview-ceramic.png"),L"輸出三種形狀的磁磚預覽");
+                AtomicOutput(app.directory/L"bevel-results.txt",[&](std::ostream& out){out<<"PASS checks="<<app.smokeChecks<<'\n';});
+                app.smokeDone=true;Command(IdExit);return;
+            }
             if(app.trayLayoutOnly) {
                 const auto original=app.catalog.active;
                 auto next=CurrentCatalog();
@@ -2537,6 +2600,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         else if(std::wstring(argv[i])==L"--startup")app.startupLaunch=true;
         else if(std::wstring(argv[i])==L"--feature-test"){app.smoke=true;app.featureOnly=true;}
         else if(std::wstring(argv[i])==L"--layouts-menu-test"){app.smoke=true;app.trayLayoutOnly=true;}
+        else if(std::wstring(argv[i])==L"--bevel-test"){app.smoke=true;app.bevelOnly=true;}
         else if(std::wstring(argv[i])==L"--sage-test"){app.smoke=true;app.sageOnly=true;}
         else if(std::wstring(argv[i])==L"--demo-capture")app.demoCapture=true;
     }
@@ -2586,7 +2650,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
             for(int i=0;i<3;++i) {
                 Tile t;t.text=Utf8(Tr(L"新文字"));t.id=i+1;t.position=base+Point{double(i*120),i==1?Height/2:0};
                 t.kind=static_cast<Kind>(i);
-                if(t.kind==Kind::Timer){t.fontSize=22;t.textColor=0x71EDC4;}
+                if(t.kind==Kind::Timer)t.fontSize=22;
                 if(i==0)t.text=Utf8(Tr(L"今天的重點\n雙擊開始編輯"));
                 app.tiles.push_back(t);
             }

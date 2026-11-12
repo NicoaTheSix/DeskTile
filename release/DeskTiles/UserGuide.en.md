@@ -30,7 +30,7 @@ Select one or more tiles, choose **Text**, **Image** or **Timer**, edit the fiel
 
 - **Size and text…**: width 80–480 px; requested font size 8–96 px; installed supported fonts and text color. Check only the settings you want to apply.
 - Text that does not fit is rendered smaller without changing the saved font size. Long content can be shortened with an ellipsis. Missing Chinese glyphs use a covering fallback font for consistent measurement and rendering.
-- **Border style…**: solid, pixel, animated RGB or single-color breathing; width 1–12 px and effect cycle 2–60 seconds.
+- **Border style…**: ceramic tile (default), solid, pixel, animated RGB or single-color breathing; width 1–12 px and effect cycle 2–60 seconds.
 - **Background…**: color and 0–100% transparency. Transparency affects the background only. Text, images and borders keep their opacity; fully transparent tile areas remain selectable and draggable.
 - Appearance changes can be applied to multiple selected tiles. Resizing that would cause a collision leaves the settings unchanged.
 
@@ -111,6 +111,10 @@ desktiles-cli.exe tile delete --id 1
 ```
 
 Replace `1` with the ID from `tile list`. Use `--layout NAME` to target a layout without switching to it. If the app uses a custom data directory, put `--data-dir PATH` before the CLI command and use the same path.
+
+### Ceramic tile style
+
+New tiles use **Ceramic tile** by default. The default palette is black with white text and a white bevel. Use **Border style…** to set the bevel color and a width of 1–12 px for the selected tiles. The bevel uses light and dark edges without affecting the tile's background transparency. Existing tiles retain their saved style.
 
 ## Sage preset (Windows)
 

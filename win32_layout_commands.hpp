@@ -77,7 +77,7 @@ void ApplyCliTileOptions(Tile& tile,const CliOptions& options) {
         else throw std::runtime_error("Unknown content kind: "+*value);
         if(tile.kind!=oldKind){
             tile.running=false;tile.elapsed=0;tile.notified=false;tile.alarm={};
-            if(tile.kind==Kind::Timer){tile.fontSize=22;tile.textColor=0x71EDC4;}
+            if(tile.kind==Kind::Timer)tile.fontSize=22;
         }
     }
     if(auto value=find("--shape")){

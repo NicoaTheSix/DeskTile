@@ -132,7 +132,7 @@ inline Bundle ReadBundle(const Json& root) {
         t.size=JsonNumber(j.at("size"));t.kind=static_cast<Kind>(JsonInt(j.at("kind"),0,root.at("version")>=3?3:2));t.text=JsonString(j.at("text"),65536);
         t.topmost=JsonBool(j.at("topmost"));const auto& timer=j.at("timer");
         t.countdown=JsonBool(timer.at("countdown"));t.duration=JsonNumber(timer.at("duration"));t.elapsed=JsonNumber(timer.at("elapsed"));
-        const auto& b=j.at("border");t.borderStyle=static_cast<BorderStyle>(JsonInt(b.at("style"),0,3));
+        const auto& b=j.at("border");t.borderStyle=static_cast<BorderStyle>(JsonInt(b.at("style"),0,static_cast<int>(BorderStyle::Ceramic)));
         t.borderColor=JsonColor(b.at("color"));t.borderWidth=JsonNumber(b.at("width"));
         t.rgbCycleSeconds=JsonNumber(b.at("cycleSeconds"));t.rgbAnimated=JsonBool(b.at("animated"));
         const auto& f=j.at("typography");t.fontFamily=JsonString(f.at("family"),256);t.fontSize=JsonNumber(f.at("size"));t.textColor=JsonColor(f.at("color"));
