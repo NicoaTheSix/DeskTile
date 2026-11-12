@@ -1,8 +1,9 @@
 #include <windows.h>
 101 ICON "assets/DeskTiles.ico"
+402 RCDATA "assets/sage-gecko.jpg"
 1 VERSIONINFO
- FILEVERSION 1,3,0,0
- PRODUCTVERSION 1,3,0,0
+ FILEVERSION 1,5,0,0
+ PRODUCTVERSION 1,5,0,0
  FILEFLAGSMASK 0x3fL
  FILEFLAGS 0
  FILEOS 0x40004L
@@ -15,11 +16,11 @@ BEGIN
   BEGIN
    VALUE "CompanyName", "Nicoa's Lab"
    VALUE "FileDescription", "DeskTiles desktop widgets"
-   VALUE "FileVersion", "1.03"
+   VALUE "FileVersion", "1.05"
    VALUE "InternalName", "DeskTiles"
    VALUE "OriginalFilename", "DeskTiles.exe"
    VALUE "ProductName", "DeskTiles"
-   VALUE "ProductVersion", "1.03"
+   VALUE "ProductVersion", "1.05"
   END
  END
  BLOCK "VarFileInfo"

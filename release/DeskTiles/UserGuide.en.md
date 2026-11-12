@@ -111,3 +111,9 @@ desktiles-cli.exe tile delete --id 1
 ```
 
 Replace `1` with the ID from `tile list`. Use `--layout NAME` to target a layout without switching to it. If the app uses a custom data directory, put `--data-dir PATH` before the CLI command and use the same path.
+
+## Sage preset (Windows)
+
+Choose **Desktop layouts → Create from Sage preset…** in the tray and name the new layout. Double-click the note to edit it. To replace the photo, choose another file in the control window and apply. Right-click the photo and choose **Adjust photo crop…** to drag the photo or set the zoom. The countdown starts paused at 25 minutes.
+
+Set a custom rectangle height in **Tile size and text style…** with sizing enabled. Leave it blank for 3:2. Use **Hide tile ID and status labels** to toggle the labels for the selection. Export JSON to back up the tiles and photo together. The preset uses the current desktop wallpaper.

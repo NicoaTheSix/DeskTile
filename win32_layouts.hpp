@@ -114,7 +114,51 @@ void PrepareLayoutEdit() {
     EndDrag(false);
     if(app.sharedClock)TickTimers();
 }
-enum : int {IdProfileSave=3000,IdProfileEmpty,IdProfileRename,IdProfileFirst=3100};
+fs::path SagePhotoPath() {
+    const auto path=app.directory/L"assets"/L"built-in-sage-gecko.jpg";
+    if(!fs::exists(path)) {
+        const auto resource=FindResourceW(app.instance,MAKEINTRESOURCEW(402),RT_RCDATA);
+        const auto bytes=resource?SizeofResource(app.instance,resource):0;
+        const auto data=resource?LoadResource(app.instance,resource):nullptr;
+        const auto* contents=data?static_cast<const char*>(LockResource(data)):nullptr;
+        if(!contents||!bytes)throw std::runtime_error("Could not load the built-in Sage photo.");
+        fs::create_directories(path.parent_path());
+        AtomicOutput(path,[&](std::ostream& out){out.write(contents,bytes);});
+    }
+    return path;
+}
+
+int CreateSageLayout(LayoutCatalog& catalog,const std::string& name) {
+    Log(std::wstring(LayoutLabel(L"樣板輸入：內建照片；輸出：",L"Preset input: built-in photo; output: "))+
+        CatalogPath().wstring()+L", "+(app.directory/L"assets"/L"built-in-sage-gecko.jpg").wstring());
+    Status(LayoutLabel(L"[樣板 1/3] 建立鼠尾草綠配置",L"[Preset 1/3] Create Sage layout"));
+    const int id=CreateProfile(catalog,name,true);
+    Status(LayoutLabel(L"[樣板 2/3] 準備照片",L"[Preset 2/3] Prepare the photo"));
+    RECT work{};
+    if(!SystemParametersInfoW(SPI_GETWORKAREA,0,&work,0))throw std::runtime_error("Could not read the desktop work area.");
+    const double scale=std::clamp(std::min((work.right-work.left-44)/660.,(work.bottom-work.top-44)/378.),.5,1.);
+    const Point origin{work.left+(work.right-work.left-660*scale)/2,work.top+(work.bottom-work.top-378*scale)/2};
+    auto tile=[&](int number,Shape shape,Kind kind,double x,double y,double width){
+        Tile t;t.id=number;t.shape=shape;t.kind=kind;t.size=std::round(width*scale);
+        t.position=origin+Point{x*scale,y*scale};t.borderStyle=BorderStyle::Solid;
+        t.borderWidth=2;t.borderColor=0xC8E5AE;t.hideLabels=true;
+        return t;
+    };
+    auto note=tile(1,Shape::Hexagon,Kind::Text,0,76,280);
+    note.backgroundColor=0xACC397;note.textColor=0x151D14;note.fontSize=std::round(22*scale);
+    note.text=Utf8(LayoutLabel(L"今天的重點\n寫下想完成的事",L"Today’s focus\nWrite down what matters"));
+    auto photo=tile(2,Shape::Triangle,Kind::Image,350,0,288);
+    photo.backgroundColor=0x141512;photo.image=Utf8(SagePhotoPath().wstring());
+    auto clock=tile(3,Shape::Rectangle,Kind::Timer,310,275,350);
+    clock.rectangleHeight=std::round(103*scale);clock.backgroundColor=0x101712;clock.textColor=0xC8E5AE;
+    clock.fontFamily="Consolas";clock.fontSize=std::round(60*scale);clock.duration=1500;clock.text.clear();
+    auto& profile=catalog.profiles.at(id);
+    profile.tiles={std::move(note),std::move(photo),std::move(clock)};profile.nextTile=4;
+    Status(LayoutLabel(L"[樣板 3/3] 準備切換到新配置",L"[Preset 3/3] Ready to switch to the new layout"));
+    return id;
+}
+
+enum : int {IdProfileSave=3000,IdProfileEmpty,IdProfileRename,IdProfileSage,IdProfileFirst=3100};
 void AddProfileMenu(HMENU menu) {
     HMENU submenu=CreatePopupMenu();
     if(!submenu)return;
@@ -128,6 +172,7 @@ void AddProfileMenu(HMENU menu) {
     AppendMenuW(submenu,MF_SEPARATOR,0,nullptr);
     AppendMenuW(submenu,MF_STRING,IdProfileSave,LayoutLabel(L"儲存目前配置的副本…",L"Save a copy of current layout…"));
     AppendMenuW(submenu,MF_STRING,IdProfileEmpty,LayoutLabel(L"新增空白配置…",L"Create empty layout…"));
+    AppendMenuW(submenu,MF_STRING,IdProfileSage,LayoutLabel(L"從鼠尾草綠樣板建立…",L"Create from Sage preset…"));
     AppendMenuW(submenu,MF_STRING,IdProfileRename,LayoutLabel(L"重新命名目前配置…",L"Rename current layout…"));
     if(!AppendMenuW(menu,MF_POPUP,reinterpret_cast<UINT_PTR>(submenu),LayoutLabel(L"桌面配置",L"Desktop layouts")))DestroyMenu(submenu);
 }
@@ -159,7 +204,7 @@ INT_PTR CALLBACK LayoutNameProc(HWND dialog,UINT message,WPARAM w,LPARAM l) {
     return FALSE;
 }
 bool ProfileMenuCommand(int id) {
-    if(id!=IdProfileSave && id!=IdProfileEmpty && id!=IdProfileRename &&
+    if(id!=IdProfileSave && id!=IdProfileEmpty && id!=IdProfileRename && id!=IdProfileSage &&
        (id<IdProfileFirst || id>=IdProfileFirst+LayoutLimit))return false;
     try {
         if(id>=IdProfileFirst) {
@@ -169,14 +214,16 @@ bool ProfileMenuCommand(int id) {
             if(at->first==app.catalog.active)return true;
             PrepareLayoutEdit();auto next=CurrentCatalog();next.active=at->first;ApplyCatalog(std::move(next));
         } else {
-            const bool rename=id==IdProfileRename;
-            LayoutNameDialog prompt{rename?Wide(app.catalog.current().name):L"",rename};
+            const bool rename=id==IdProfileRename,sage=id==IdProfileSage;
+            LayoutNameDialog prompt{rename?Wide(app.catalog.current().name):
+                sage?LayoutLabel(L"鼠尾草綠",L"Sage"):L"",rename};
             struct alignas(DWORD) Template {DLGTEMPLATE header;WORD menu=0,klass=0,title=0;} dialog{};
             dialog.header.style=WS_POPUP|WS_CAPTION|WS_SYSMENU|DS_MODALFRAME|DS_CENTER;
             dialog.header.cx=258;dialog.header.cy=76;
             if(DialogBoxIndirectParamW(app.instance,&dialog.header,app.control,LayoutNameProc,reinterpret_cast<LPARAM>(&prompt))!=IDOK)return true;
             PrepareLayoutEdit();auto next=CurrentCatalog();auto name=Utf8(prompt.name);
             if(rename){RequireNewProfileName(next,name,next.active);next.current().name=name;}
+            else if(sage)next.active=CreateSageLayout(next,name);
             else CreateProfile(next,name,id==IdProfileEmpty);
             ApplyCatalog(std::move(next));
         }

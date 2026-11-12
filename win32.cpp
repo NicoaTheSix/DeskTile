@@ -85,10 +85,10 @@ constexpr int IdList=101,IdType=102,IdText=103,IdImage=104,IdBrowse=105,
     IdAddHex=150,IdAddTriangle=151,IdAddRectangle=152,IdNewShape=153,
     IdLanguage=154,IdEnglish=155,IdTraditionalChinese=156,IdLanguageLabel=157,IdAlarmSettings=158,IdStartup=159,
     IdAlarmDate=160,IdAlarmTime=161,IdAlarmRepeat=162,IdAlarmEnabled=163,IdAlarmApply=164,IdAlarmClose=165,
-    IdAlarmDay0=170,IdReminderText=180,IdDismiss=181;
+    IdAlarmDay0=170,IdReminderText=180,IdDismiss=181,IdTileHeight=182,IdPhotoCrop=183,IdHideLabels=184;
 int PixelWidth(const Tile& tile){return static_cast<int>(std::ceil(tile.size));}
 int UiWidth(int value){return static_cast<int>(std::lround(value*1.25));}
-int PixelHeight(const Tile& tile){return static_cast<int>(std::ceil(TileHeight(tile.size,tile.shape)));}
+int PixelHeight(const Tile& tile){return static_cast<int>(std::ceil(TileHeight(tile)));}
 std::wstring ShapeName(Shape shape){return shape==Shape::Triangle?Tr(L"三角形"):shape==Shape::Rectangle?Tr(L"矩形"):Tr(L"六角形");}
 std::wstring Wide(const std::string& s) {
     if (s.empty()) return {};
@@ -150,7 +150,7 @@ struct App {
     fs::path directory,statePath,logPath;
     std::ofstream log;
     bool loadingControls=false,dragging=false,moved=false,savingFailed=false,exiting=false;
-    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false,trayLayoutOnly=false;
+    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false,trayLayoutOnly=false,sageOnly=false;
     std::map<HWND,const Translation*> uiLabels;
     Point dragStart,dragDelta;
     HWND dragWindow=nullptr;
@@ -191,6 +191,7 @@ void ShowAppearance();
 void UpdateAnimation();
 void RefreshLayout();
 void ShowLayout();
+void ShowPhotoCrop();
 void PresentTile(Tile& tile);
 void ShowAlarm();
 void RefreshAlarm();
@@ -307,16 +308,15 @@ void LoadImage(Tile& tile) {
         // Keep only a thumbnail. The source decoder and its file handle are released here.
         auto thumbnail=std::make_unique<Bitmap>(tileWidth,tileHeight,PixelFormat32bppPARGB);
         Graphics g(thumbnail.get()); g.SetInterpolationMode(InterpolationModeHighQualityBicubic);
-        double scale=std::max(double(tileWidth)/source->GetWidth(),double(tileHeight)/source->GetHeight());
-        int w=static_cast<int>(std::ceil(source->GetWidth()*scale));
-        int h=static_cast<int>(std::ceil(source->GetHeight()*scale));
-        g.DrawImage(source.get(),(tileWidth-w)/2,(tileHeight-h)/2,w,h);
+        const auto crop=FitPhoto(source->GetWidth(),source->GetHeight(),tileWidth,tileHeight,tile.photoFocus,tile.photoZoom);
+        g.DrawImage(source.get(),static_cast<float>(crop.x),static_cast<float>(crop.y),
+            static_cast<float>(crop.width),static_cast<float>(crop.height));
         view.image=std::move(thumbnail);
         Log(Tr(L"[圖片 2/2] 縮圖完成，已釋放原始解碼器。"));
     } catch(...) { view.imageFailed=true; }
 }
-GraphicsPath* OutlinePath(BorderStyle style,double inset,double size=Width,Shape shape=Shape::Hexagon) {
-    auto outline=BorderOutline(style,inset,size,shape);std::vector<PointF> points;
+GraphicsPath* OutlinePath(BorderStyle style,double inset,double size,Shape shape,double rectangleHeight) {
+    auto outline=BorderOutline(style,inset,size,shape,rectangleHeight);std::vector<PointF> points;
     for(auto p:outline)points.push_back({static_cast<float>(p.x),static_cast<float>(p.y)});
     auto* path=new GraphicsPath();path->AddPolygon(points.data(),static_cast<int>(points.size()));return path;
 }
@@ -327,10 +327,10 @@ void DrawBorder(Graphics& g,const Tile& tile) {
     const bool pixel=tile.borderStyle==BorderStyle::Pixel;
     g.SetSmoothingMode(pixel?Gdiplus::SmoothingModeNone:SmoothingModeAntiAlias);
     float width=static_cast<float>(tile.borderWidth);
-    std::unique_ptr<GraphicsPath> path(OutlinePath(tile.borderStyle,width/2+2,tile.size,tile.shape));
+    std::unique_ptr<GraphicsPath> path(OutlinePath(tile.borderStyle,width/2+2,tile.size,tile.shape,tile.rectangleHeight));
     if(tile.borderStyle==BorderStyle::Rgb) {
         Pen glow(Color(55,130,185,255),width+4);g.DrawPath(&glow,path.get());
-        auto corners=BorderOutline(BorderStyle::Solid,width/2+2,tile.size,tile.shape);
+        auto corners=BorderOutline(BorderStyle::Solid,width/2+2,tile.size,tile.shape,tile.rectangleHeight);
         double seconds=app.animationSecondsOverride>=0?app.animationSecondsOverride:
             std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
         double phase=ColorHue(tile.borderColor)+(tile.rgbAnimated?seconds/tile.rgbCycleSeconds:0);
@@ -357,7 +357,7 @@ void DrawBorder(Graphics& g,const Tile& tile) {
     if(app.selection.count(tile.id)) {
         // Selection markers stay separate so the chosen color and thickness remain visible.
         SolidBrush marker(Color(255,236,255,248));
-        for(auto p:BorderOutline(BorderStyle::Solid,width+7,tile.size,tile.shape))
+        for(auto p:BorderOutline(BorderStyle::Solid,width+7,tile.size,tile.shape,tile.rectangleHeight))
             g.FillRectangle(&marker,static_cast<float>(p.x-1.5),static_cast<float>(p.y-1.5),3.0f,3.0f);
     }
 }
@@ -416,7 +416,7 @@ void DrawFittedText(Graphics& graphics,const std::wstring& text,const FontFamily
 void DrawTileBody(Graphics& g,Tile& tile) {
     g.SetSmoothingMode(SmoothingModeAntiAlias);
     g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
-    std::unique_ptr<GraphicsPath> polygon(OutlinePath(tile.borderStyle,0,tile.size,tile.shape));
+    std::unique_ptr<GraphicsPath> polygon(OutlinePath(tile.borderStyle,0,tile.size,tile.shape,tile.rectangleHeight));
     g.Clear(Color(0,0,0,0));
     SolidBrush background(BorderColor(tile.backgroundColor,static_cast<BYTE>(std::lround(255*(1-tile.backgroundTransparency/100)))));
     g.FillPath(&background,polygon.get());
@@ -433,11 +433,11 @@ void DrawTileBody(Graphics& g,Tile& tile) {
     float contentSize=static_cast<float>(tile.fontSize);
     int clockStyle=AvailableTextStyle(*family,true);
     SolidBrush muted(BorderColor(tile.textColor,175)),content(BorderColor(tile.textColor));
-    float w=static_cast<float>(tile.size),h=static_cast<float>(TileHeight(tile.size,tile.shape));
+    float w=static_cast<float>(tile.size),h=static_cast<float>(TileHeight(tile));
     bool triangle=tile.shape==Shape::Triangle;
     g.SetClip(polygon.get());
     std::wstring label=L"#"+std::to_wstring(tile.id)+L"  "+(tile.topmost?Tr(L"置頂"):Tr(L"桌面"));
-    if(tile.kind!=Kind::Image || !app.views[tile.id].image)
+    if(!tile.hideLabels && (tile.kind!=Kind::Image || !app.views[tile.id].image))
         DrawFittedText(g,label,family,normalStyle,captionSize,triangle?RectF(w*.35f,h*.32f,w*.3f,h*.14f):RectF(w*.21f,h*.1f,w*.58f,h*.17f),&muted);
     if(tile.kind==Kind::Text) {
         auto text=Wide(tile.text);DrawFittedText(g,text,family,normalStyle,contentSize,triangle?RectF(w*.26f,h*.5f,w*.48f,h*.35f):RectF(w*.14f,h*.28f,w*.72f,h*.5f),&content);
@@ -446,6 +446,8 @@ void DrawTileBody(Graphics& g,Tile& tile) {
         auto time=Wide(alarm?AlarmTimeText(tile.alarm.minute):Clock(tile));
         auto timeBox=hasText?(triangle?RectF(w*.23f,h*.48f,w*.54f,h*.18f):RectF(w*.09f,h*.28f,w*.82f,h*.23f)):
             (triangle?RectF(w*.23f,h*.53f,w*.54f,h*.25f):RectF(w*.07f,h*.32f,w*.86f,h*.32f));
+        if(tile.hideLabels&&!hasText)
+            timeBox=triangle?RectF(w*.23f,h*.43f,w*.54f,h*.43f):RectF(w*.07f,h*.12f,w*.86f,h*.76f);
         DrawFittedText(g,time,family,clockStyle,contentSize,timeBox,&content);
         if(hasText)DrawFittedText(g,Wide(tile.text),family,normalStyle,contentSize*.75f,
             triangle?RectF(w*.18f,h*.69f,w*.64f,h*.17f):RectF(w*.14f,h*.55f,w*.72f,h*.22f),&content);
@@ -453,7 +455,7 @@ void DrawTileBody(Graphics& g,Tile& tile) {
             ((tile.countdown && tile.elapsed>=tile.duration)?Tr(L"時間到"):Tr(L"已暫停"));
         auto stateBox=hasText?(triangle?RectF(w*.15f,h*.89f,w*.7f,h*.10f):RectF(w*.12f,h*.82f,w*.76f,h*.12f)):
             (triangle?RectF(w*.18f,h*.8f,w*.64f,h*.13f):RectF(w*.18f,h*.67f,w*.64f,h*.17f));
-        DrawFittedText(g,state,family,normalStyle,captionSize,stateBox,&muted);
+        if(!tile.hideLabels)DrawFittedText(g,state,family,normalStyle,captionSize,stateBox,&muted);
     } else if(!app.views[tile.id].image) {
         const wchar_t* hint=app.views[tile.id].imageFailed?Tr(L"圖片無法讀取\n雙擊重新選擇"):Tr(L"雙擊選擇圖片");
         DrawFittedText(g,hint,family,normalStyle,contentSize,triangle?RectF(w*.26f,h*.5f,w*.48f,h*.35f):RectF(w*.15f,h*.30f,w*.70f,h*.45f),&content);
@@ -497,7 +499,7 @@ void UpdateSelectionVisuals(const std::set<int>& before) {
     }
 }
 void UpdateTileRegion(Tile& tile) {
-    auto shape=BorderOutline(tile.borderStyle,0,tile.size,tile.shape);std::vector<POINT> points;
+    auto shape=BorderOutline(tile.borderStyle,0,tile.size,tile.shape,tile.rectangleHeight);std::vector<POINT> points;
     for(auto p:shape)points.push_back({LONG(std::lround(p.x)),LONG(std::lround(p.y))});
     SetWindowRgn(app.views[tile.id].window,CreatePolygonRgn(points.data(),static_cast<int>(points.size()),WINDING),TRUE);
 }
@@ -715,11 +717,11 @@ void AddTile(Shape shape) {
     }
     if(app.tiles.empty()) found=true;
     for(const auto& reference:search) {
-        for(auto direction:Neighbors(reference.size,tile.size,reference.shape,tile.shape)) {
+        for(auto direction:Neighbors(reference.size,tile.size,reference.shape,tile.shape,nullptr,reference.rectangleHeight,tile.rectangleHeight)) {
             auto p=reference.position+direction;
             bool collision=false;
-            for(const auto& other:app.tiles) if(Overlaps(p,other.position,tile.size,other.size,tile.shape,other.shape)) collision=true;
-            RECT r{LONG(p.x),LONG(p.y),LONG(p.x+tile.size),LONG(p.y+TileHeight(tile.size,tile.shape))};
+            for(const auto& other:app.tiles) if(TilesOverlap(tile,other,p-tile.position)) collision=true;
+            RECT r{LONG(p.x),LONG(p.y),LONG(p.x+tile.size),LONG(p.y+TileHeight(tile))};
             if(!collision && MonitorFromRect(&r,MONITOR_DEFAULTTONULL)) {tile.position=p;found=true;break;}
         }
         if(found) break;
@@ -757,7 +759,10 @@ void ApplyContent() {
         if(kind==3&&t.kind!=Kind::Alarm){t.alarm=primary->alarm;ArmAlarm(t.alarm,static_cast<std::int64_t>(std::time(nullptr)));}
         if(kind!=3)t.alarm.nextDue=0;
         t.kind=static_cast<Kind>(kind);t.text=text;
-        if(kind==1) {t.image=image;app.views[t.id].imagePath.clear();LoadImage(t);}
+        if(kind==1) {
+            if(t.image!=image){t.photoFocus={.5,.5};t.photoZoom=1;}
+            t.image=image;app.views[t.id].imagePath.clear();LoadImage(t);
+        }
         else {app.views[t.id].image.reset(); app.views[t.id].imagePath.clear();}
         if(kind==2) {t.duration=duration;t.countdown=countdown;if(reset){t.elapsed=0;t.running=false;t.notified=false;}}
         else t.running=false;
@@ -810,14 +815,18 @@ HMENU BuildTileMenu(bool trayMenu) {
     AppendMenuW(menu,MF_STRING,IdImportReplace,Tr(L"匯入 JSON：覆蓋配置…"));
     AppendMenuW(menu,MF_STRING,IdImportMerge,Tr(L"匯入 JSON：合併配置…"));
     if(!trayMenu && !app.selection.empty()) {
-        bool allTop=true,allDesktop=true,hasTimer=false;
+        bool allTop=true,allDesktop=true,hasTimer=false,labelsHidden=true;
         for(const auto& t:app.tiles) if(app.selection.count(t.id)) {
-            allTop&=t.topmost; allDesktop&=!t.topmost; hasTimer|=t.kind==Kind::Timer;
+            allTop&=t.topmost; allDesktop&=!t.topmost; hasTimer|=t.kind==Kind::Timer; labelsHidden&=t.hideLabels;
         }
         AppendMenuW(menu,MF_SEPARATOR,0,nullptr);
         AppendMenuW(menu,MF_STRING,IdAppearance,Tr(L"邊框顏色、厚度與風格…"));
         AppendMenuW(menu,MF_STRING,IdLayout,Tr(L"圖形大小與文字樣式…"));
         AppendMenuW(menu,MF_STRING,IdBackground,Tr(L"背景顏色與透明度…"));
+        AppendMenuW(menu,MF_STRING|(labelsHidden?MF_CHECKED:0),IdHideLabels,Tr(L"隱藏編號與狀態標籤"));
+        const auto* primary=Find(app.primary);
+        if(primary&&primary->kind==Kind::Image&&!primary->image.empty())
+            AppendMenuW(menu,MF_STRING,IdPhotoCrop,Tr(L"調整照片裁切…"));
         AppendMenuW(menu,MF_STRING,IdAlarmSettings,Tr(L"鬧鐘設定…"));
         if(!allTop && !allDesktop) AppendMenuW(menu,MF_STRING|MF_DISABLED,0,Tr(L"顯示層級：混合狀態"));
         AppendMenuW(menu,MF_STRING|(allTop?MF_CHECKED:0),IdTop,Tr(L"顯示於最上層"));
@@ -862,6 +871,14 @@ void Command(int id) {
     case IdTraditionalChinese:SwitchLanguage(Language::TraditionalChinese);break;
     case IdAppearance:ShowAppearance();break;
     case IdLayout:ShowLayout();break;
+    case IdPhotoCrop:ShowPhotoCrop();break;
+    case IdHideLabels:{
+        const bool show=std::all_of(app.tiles.begin(),app.tiles.end(),[](const Tile& t){
+            return !app.selection.count(t.id)||t.hideLabels;
+        });
+        for(auto& t:app.tiles)if(app.selection.count(t.id))t.hideLabels=!show;
+        SaveState();Repaint();break;
+    }
     case IdBackground:ShowBackground();break;
     case IdAlarmSettings:ShowAlarm();break;
     case IdStartup:ToggleStartup();break;
@@ -912,7 +929,7 @@ void Command(int id) {
         if(!app.tiles.empty()) {
             double minX=app.tiles.front().position.x,minY=app.tiles.front().position.y,maxX=minX,maxY=minY;
             int cellW=0,cellH=0;
-            for(auto& t:app.tiles) {minX=std::min(minX,t.position.x);minY=std::min(minY,t.position.y);maxX=std::max(maxX,t.position.x+t.size);maxY=std::max(maxY,t.position.y+TileHeight(t.size,t.shape));cellW=std::max(cellW,PixelWidth(t)+6);cellH=std::max(cellH,PixelHeight(t)+6);}
+            for(auto& t:app.tiles) {minX=std::min(minX,t.position.x);minY=std::min(minY,t.position.y);maxX=std::max(maxX,t.position.x+t.size);maxY=std::max(maxY,t.position.y+TileHeight(t));cellW=std::max(cellW,PixelWidth(t)+6);cellH=std::max(cellH,PixelHeight(t)+6);}
             bool fits=maxX-minX<area.right-area.left-40 && maxY-minY<area.bottom-area.top-40;
             int i=0,columns=std::max(1,int((area.right-area.left-40)/cellW));
             app.hidden.clear();
@@ -1073,6 +1090,7 @@ void UpdateLayoutControls() {
     bool size=selected && SendMessageW(f[IdResizeCheck],BM_GETCHECK,0,0)==BST_CHECKED;
     bool text=selected && SendMessageW(f[IdTextCheck],BM_GETCHECK,0,0)==BST_CHECKED;
     EnableWindow(f[IdTileSize],size);
+    EnableWindow(f[IdTileHeight],size&&Find(app.primary)->shape==Shape::Rectangle);
     for(int id:{IdFontFamily,IdFontSize,IdTextColor,IdChooseTextColor})EnableWindow(f[id],text);
 }
 void RefreshLayout() {
@@ -1081,12 +1099,14 @@ void RefreshLayout() {
     if(tile && !app.selection.count(tile->id))tile=nullptr;
     bool mixed=false;
     if(tile)for(const auto& t:app.tiles)if(app.selection.count(t.id) &&
-        (t.size!=tile->size || !SameTypography(t,*tile)))mixed=true;
+        (t.size!=tile->size || t.rectangleHeight!=tile->rectangleHeight || !SameTypography(t,*tile)))mixed=true;
     auto label=tile?L"#"+std::to_wstring(tile->id)+Tr(L" · 選取 ")+std::to_wstring(app.selection.size())+TrCounted(L" 格",app.selection.size())+(mixed?Tr(L" · 混合設定，以此格為範本"):L""):Tr(L"請先選取圖形");
     SetWindowTextW(f[230],label.c_str());
     if(tile) {
         std::wostringstream size,font;size<<tile->size;font<<tile->fontSize;
         SetWindowTextW(f[IdTileSize],size.str().c_str());SetWindowTextW(f[IdFontSize],font.str().c_str());
+        std::wostringstream height;if(tile->rectangleHeight>0)height<<tile->rectangleHeight;
+        SetWindowTextW(f[IdTileHeight],height.str().c_str());
         SetWindowTextW(f[IdFontFamily],Wide(tile->fontFamily).c_str());
         SetWindowTextW(f[IdTextColor],Wide(ColorText(tile->textColor)).c_str());
     }
@@ -1102,6 +1122,14 @@ bool ApplyLayout() {
     if(!resize && !typography){Error(Tr(L"請先勾選要套用的大小或文字樣式。"));return false;}
     double size=0,fontSize=0;std::uint32_t color=0;std::wstring family;
     if(resize && !ReadNumber(f[IdTileSize],80,480,size)){Error(Tr(L"圖形寬度請輸入 80～480 像素。"));return false;}
+    std::optional<double> rectangleHeight;
+    if(resize&&Find(app.primary)->shape==Shape::Rectangle) {
+        double height=0;
+        if(!TextOf(f[IdTileHeight]).empty()&&!ReadNumber(f[IdTileHeight],40,480,height)){
+            Error(Tr(L"矩形高度請輸入 40～480 像素，或留空使用 3:2。"));return false;
+        }
+        rectangleHeight=height;
+    }
     if(typography) {
         family=TextOf(f[IdFontFamily]);FontFamily available(family.c_str());
         if(family.empty() || Utf8(family).size()>256 || AvailableTextStyle(available)<0) {
@@ -1112,12 +1140,12 @@ bool ApplyLayout() {
     }
     EndDrag(false);if(app.sharedClock)TickTimers();
     auto candidate=app.tiles;
-    if(resize && !Resize(candidate,app.selection,app.primary,size)) {
+    if(resize && !Resize(candidate,app.selection,app.primary,size,rectangleHeight)) {
         Error(Tr(L"調整後會與其他格子重疊。請選取整組一起調整，或先移開附近格子；設定已保留原狀。"));return false;
     }
     std::set<int> resized;
     for(auto& t:candidate)if(app.selection.count(t.id)) {
-        if(t.size!=Find(t.id)->size)resized.insert(t.id);
+        if(t.size!=Find(t.id)->size || t.rectangleHeight!=Find(t.id)->rectangleHeight)resized.insert(t.id);
         if(typography){t.fontFamily=Utf8(family);t.fontSize=fontSize;t.textColor=color;}
     }
     Status(Tr(L"[大小／文字 2/3] 更新 ")+std::to_wstring(app.selection.size())+TrCounted(L" 格",app.selection.size()));
@@ -1141,7 +1169,7 @@ void ShowLayout() {
     if(app.selection.empty())return;
     ShowControl();
     if(!app.layout) {
-        RECT bounds{0,0,UiWidth(492),445};DWORD style=WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU;
+        RECT bounds{0,0,UiWidth(492),489};DWORD style=WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU;
         AdjustWindowRect(&bounds,style,FALSE);RECT parent;GetWindowRect(app.control,&parent);
         app.layout=CreateWindowExW(WS_EX_DLGMODALFRAME,LayoutClass,Tr(L"DeskTiles · 大小與文字"),style,
             parent.left+40,parent.top+65,bounds.right-bounds.left,bounds.bottom-bounds.top,app.control,nullptr,app.instance,nullptr);
@@ -1152,22 +1180,24 @@ void ShowLayout() {
         field(IdResizeCheck,L"BUTTON",Tr(L"套用大小"),WS_TABSTOP|BS_AUTOCHECKBOX,22,60,115,30);
         field(IdTileSize,L"EDIT",L"160",WS_TABSTOP|ES_AUTOHSCROLL,150,60,80,30);
         field(232,L"STATIC",Tr(L"寬度 px（80～480）"),0,242,65,226,24);
-        field(IdTextCheck,L"BUTTON",Tr(L"套用文字樣式（含計時數字）"),WS_TABSTOP|BS_AUTOCHECKBOX,22,108,442,30);
+        field(IdTileHeight,L"EDIT",L"",WS_TABSTOP|ES_AUTOHSCROLL,150,102,80,30);
+        field(238,L"STATIC",Tr(L"矩形高度（留空為 3:2）"),0,242,107,226,24);
+        field(IdTextCheck,L"BUTTON",Tr(L"套用文字樣式（含計時數字）"),WS_TABSTOP|BS_AUTOCHECKBOX,22,152,442,30);
         SendMessageW(app.layoutWidgets[IdTextCheck],BM_SETCHECK,BST_CHECKED,0);
-        field(233,L"STATIC",Tr(L"字體"),0,22,160,110,24);
-        field(IdFontFamily,L"COMBOBOX",L"",WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWN|CBS_AUTOHSCROLL|CBS_SORT,150,155,318,250);
+        field(233,L"STATIC",Tr(L"字體"),0,22,204,110,24);
+        field(IdFontFamily,L"COMBOBOX",L"",WS_TABSTOP|WS_VSCROLL|CBS_DROPDOWN|CBS_AUTOHSCROLL|CBS_SORT,150,199,318,250);
         SendMessageW(app.layoutWidgets[IdFontFamily],CB_LIMITTEXT,31,0);
-        field(234,L"STATIC",Tr(L"字級"),0,22,207,110,24);
-        field(IdFontSize,L"EDIT",L"14",WS_TABSTOP|ES_AUTOHSCROLL,150,201,80,30);
-        field(235,L"STATIC",Tr(L"像素（8～96）"),0,242,207,226,24);
-        field(236,L"STATIC",Tr(L"文字顏色"),0,22,254,110,24);
-        field(IdTextColor,L"EDIT",L"#EBF4F5",WS_TABSTOP|ES_AUTOHSCROLL,150,248,170,30);
+        field(234,L"STATIC",Tr(L"字級"),0,22,251,110,24);
+        field(IdFontSize,L"EDIT",L"14",WS_TABSTOP|ES_AUTOHSCROLL,150,245,80,30);
+        field(235,L"STATIC",Tr(L"像素（8～96）"),0,242,251,226,24);
+        field(236,L"STATIC",Tr(L"文字顏色"),0,22,298,110,24);
+        field(IdTextColor,L"EDIT",L"#EBF4F5",WS_TABSTOP|ES_AUTOHSCROLL,150,292,170,30);
         SendMessageW(app.layoutWidgets[IdTextColor],EM_SETLIMITTEXT,7,0);
-        field(IdChooseTextColor,L"BUTTON",Tr(L"選擇顏色…"),WS_TABSTOP,334,246,134,34);
-        field(237,L"STATIC",Tr(L"只套用勾選項目。主選取格位置保持不變。\r\n多選縮放會等比例調整位置；空間不足時保留原狀。"),0,22,303,448,45);
-        field(IdApplyLayout,L"BUTTON",Tr(L"套用至所有選取格"),WS_TABSTOP|BS_DEFPUSHBUTTON,22,365,290,38);
-        field(IdCloseLayout,L"BUTTON",Tr(L"關閉"),WS_TABSTOP,330,365,138,38);
-        field(231,L"STATIC",Tr(L"修改後按套用；內容文字不會被覆寫。"),SS_PATHELLIPSIS,22,417,448,22);
+        field(IdChooseTextColor,L"BUTTON",Tr(L"選擇顏色…"),WS_TABSTOP,334,290,134,34);
+        field(237,L"STATIC",Tr(L"只套用勾選項目。主選取格位置保持不變。\r\n多選縮放會等比例調整位置；空間不足時保留原狀。"),0,22,347,448,45);
+        field(IdApplyLayout,L"BUTTON",Tr(L"套用至所有選取格"),WS_TABSTOP|BS_DEFPUSHBUTTON,22,409,290,38);
+        field(IdCloseLayout,L"BUTTON",Tr(L"關閉"),WS_TABSTOP,330,409,138,38);
+        field(231,L"STATIC",Tr(L"修改後按套用；內容文字不會被覆寫。"),SS_PATHELLIPSIS,22,461,448,22);
         Status(Tr(L"[字體清單 1/2] 讀取本機已安裝字體"));
         std::set<std::wstring> names;LOGFONTW query{};query.lfCharSet=DEFAULT_CHARSET;
         HDC dc=GetDC(app.layout);EnumFontFamiliesExW(dc,&query,CollectFonts,reinterpret_cast<LPARAM>(&names),0);ReleaseDC(app.layout,dc);
@@ -1326,6 +1356,7 @@ void ValidateAsset(const Asset& asset) {
     stream->Release();if(!valid)throw std::runtime_error("內嵌圖片損壞或解析度超過 6400 萬像素");
 }
 #include "win32_layouts.hpp"
+#include "win32_photo.hpp"
 #include "win32_layout_commands.hpp"
 bool ExportConfig(const fs::path& requested) {
     try {
@@ -1655,7 +1686,7 @@ void CaptureWindowPng(HWND window,const fs::path& path) {
     CLSID png{0x557cf406,0x1a04,0x11d3,{0x9a,0x73,0x00,0x00,0xf8,0x1e,0xf3,0x2e}};
     image.Save(path.c_str(),&png);SelectObject(dc,old);DeleteObject(bitmap);DeleteDC(dc);ReleaseDC(nullptr,screen);
 }
-void CapturePreview(const std::wstring& suffix=L"") {
+void CapturePreview(const std::wstring& suffix=L"",std::uint32_t backdrop=0xE9EFED) {
     RECT r;GetWindowRect(app.control,&r);int width=r.right-r.left,height=r.bottom-r.top;
     HDC screen=GetDC(nullptr),dc=CreateCompatibleDC(screen);
     HBITMAP bitmap=CreateCompatibleBitmap(screen,width,height);auto old=SelectObject(dc,bitmap);
@@ -1668,9 +1699,9 @@ void CapturePreview(const std::wstring& suffix=L"") {
     if(!app.tiles.empty()) {left=right=app.tiles[0].position.x;top=bottom=app.tiles[0].position.y;}
     for(size_t i=0;i<std::min<size_t>(3,app.tiles.size());++i) {
         const auto& t=app.tiles[i];left=std::min(left,t.position.x);top=std::min(top,t.position.y);
-        right=std::max(right,t.position.x+t.size);bottom=std::max(bottom,t.position.y+TileHeight(t.size,t.shape));
+        right=std::max(right,t.position.x+t.size);bottom=std::max(bottom,t.position.y+TileHeight(t));
     }
-    Bitmap board(static_cast<INT>(std::ceil(right-left))+80,static_cast<INT>(std::ceil(bottom-top))+80,PixelFormat32bppARGB);Graphics g(&board);g.Clear(Color(255,233,239,237));
+    Bitmap board(static_cast<INT>(std::ceil(right-left))+80,static_cast<INT>(std::ceil(bottom-top))+80,PixelFormat32bppARGB);Graphics g(&board);g.Clear(BorderColor(backdrop));
     HDC target=g.GetHDC();
     int i=0;
     for(auto& t:app.tiles) {
@@ -2176,10 +2207,88 @@ void SmokeLanguage() {
     std::ofstream report(app.directory/L"language-results.txt");report<<"PASS checks="<<app.smokeChecks-firstCheck<<"\nEnglish and Traditional Chinese UI, draft preservation, menus, errors, preference persistence and save failure verified.\n";
 }
 
+void CALLBACK EditSmokePhotoDialog(HWND owner,UINT,UINT_PTR timer,DWORD) {
+    HWND dialog=GetLastActivePopup(owner);
+    if(dialog==owner || !GetDlgItem(dialog,photo_crop::Zoom))return;
+    KillTimer(owner,timer);
+    SetDlgItemInt(dialog,photo_crop::FocusX,20,FALSE);
+    SetDlgItemInt(dialog,photo_crop::FocusY,80,FALSE);
+    SetDlgItemInt(dialog,photo_crop::Zoom,150,FALSE);
+    UpdateWindow(dialog);
+    SendMessageW(dialog,WM_COMMAND,IDOK,0);
+}
+
+void SmokeSageLayout() {
+    Status(L"[樣板驗證 1/4] 建立並切換獨立配置");
+    const auto original=app.catalog.active;
+    const auto originalCount=app.tiles.size();
+    HMENU menu=BuildTileMenu(true);
+    HMENU layouts=GetSubMenu(menu,0);
+    const bool hasPreset=GetMenuState(layouts,IdProfileSage,MF_BYCOMMAND)!=UINT(-1);
+    DestroyMenu(menu);
+    SmokeCheck(hasPreset,L"系統匣有鼠尾草綠樣板入口");
+    auto next=CurrentCatalog();
+    const auto sage=CreateSageLayout(next,"Sage test");
+    next.active=sage;ApplyCatalog(std::move(next));
+    SmokeCheck(app.tiles.size()==3 && app.catalog.profiles.at(original).tiles.size()==originalCount,
+        L"建立獨立配置並保留原方塊");
+    SmokeCheck(Find(1)->kind==Kind::Text&&Find(2)->kind==Kind::Image&&app.views[2].image&&
+        Find(3)->kind==Kind::Timer&&Find(3)->duration==1500&&Find(3)->text.empty()&&
+        Find(3)->rectangleHeight>=52&&Find(3)->rectangleHeight<=103&&
+        std::all_of(app.tiles.begin(),app.tiles.end(),[](const Tile& t){return t.hideLabels;}),
+        L"三格保留原生功能與樣板外觀");
+    CapturePreview(L"-sage",0x202221);
+
+    Status(L"[樣板驗證 2/4] 編輯筆記、照片及矩形");
+    app.selection={1};app.primary=1;RefreshControls();
+    SetWindowTextW(app.widgets[IdText],L"Editable note");ApplyContent();
+    SmokeCheck(Find(1)->text=="Editable note",L"樣板筆記可修改");
+    app.selection={2};app.primary=2;RefreshControls();
+    SetTimer(app.control,771,25,EditSmokePhotoDialog);
+    Command(IdPhotoCrop);
+    KillTimer(app.control,771);
+    SmokeCheck(app.views[2].image&&Find(2)->photoFocus.x==.2&&Find(2)->photoFocus.y==.8&&Find(2)->photoZoom==1.5,
+        L"裁切視窗可套用照片焦點及縮放並重建縮圖");
+    const auto replacement=app.directory/L"replacement-photo.jpg";
+    fs::copy_file(fs::u8path(Find(2)->image),replacement);
+    SetWindowTextW(app.widgets[IdImage],replacement.c_str());ApplyContent();
+    SmokeCheck(fs::u8path(Find(2)->image)==replacement&&Find(2)->photoZoom==1&&app.views[2].image,
+        L"更換照片後可重新構圖");
+    SmokeCheck(ApplyPhotoCrop(2,{.3,.7},1.25),L"替換照片可再次裁切");
+    app.selection={3};app.primary=3;RefreshControls();ShowLayout();
+    SendMessageW(app.layoutWidgets[IdResizeCheck],BM_SETCHECK,BST_CHECKED,0);
+    SendMessageW(app.layoutWidgets[IdTextCheck],BM_SETCHECK,BST_UNCHECKED,0);
+    SetWindowTextW(app.layoutWidgets[IdTileHeight],L"78");
+    SmokeCheck(ApplyLayout()&&PixelHeight(*Find(3))==78,L"控制視窗可獨立調整矩形高度");
+    ShowWindow(app.layout,SW_HIDE);
+    Command(IdHideLabels);
+    SmokeCheck(!Find(3)->hideLabels&&Find(1)->hideLabels,L"標籤可按方塊切換");
+    Command(IdHideLabels);
+
+    Status(L"[樣板驗證 3/4] 核對 JSON、配置儲存及倒數");
+    const auto jsonPath=app.directory/L"sage-export.json";
+    SmokeCheck(ExportConfig(jsonPath),L"匯出包含裁切與替換圖片的配置");
+    std::ifstream json(jsonPath,std::ios::binary);const auto bundle=ParseBundle(json);
+    SmokeCheck(bundle.tiles[1].photoZoom==1.25&&bundle.tiles[2].rectangleHeight==78&&
+        bundle.tiles[2].hideLabels&&!bundle.images.empty(),L"匯出保留新外觀和圖片");
+    ToggleTimer();
+    SmokeCheck(Find(3)->running,L"可啟動樣板倒數");
+    PrepareLayoutEdit();next=CurrentCatalog();next.active=original;ApplyCatalog(std::move(next));
+    SmokeCheck(app.catalog.profiles.at(sage).tiles[2].running,L"切回原配置時樣板倒數持續運作");
+    std::ifstream disk(CatalogPath(),std::ios::binary);const auto stored=ReadCatalog(disk);
+    const auto& tiles=stored.profiles.at(sage).tiles;
+    SmokeCheck(tiles[0].text=="Editable note"&&tiles[1].photoZoom==1.25&&tiles[2].rectangleHeight==78,
+        L"重新讀取配置保留編輯結果");
+
+    Status(L"[樣板驗證 4/4] 保存驗證報告");
+    AtomicOutput(app.directory/L"sage-results.txt",[&](std::ostream& out){out<<"PASS checks="<<app.smokeChecks<<'\n';});
+}
+
 void SmokeTick() {
     try {
         if(app.smokeStep==0) {
             KillTimer(app.control,2);
+            if(app.sageOnly){SmokeSageLayout();app.smokeDone=true;Command(IdExit);return;}
             if(app.trayLayoutOnly) {
                 const auto original=app.catalog.active;
                 auto next=CurrentCatalog();
@@ -2428,6 +2537,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         else if(std::wstring(argv[i])==L"--startup")app.startupLaunch=true;
         else if(std::wstring(argv[i])==L"--feature-test"){app.smoke=true;app.featureOnly=true;}
         else if(std::wstring(argv[i])==L"--layouts-menu-test"){app.smoke=true;app.trayLayoutOnly=true;}
+        else if(std::wstring(argv[i])==L"--sage-test"){app.smoke=true;app.sageOnly=true;}
         else if(std::wstring(argv[i])==L"--demo-capture")app.demoCapture=true;
     }
     LocalFree(argv);

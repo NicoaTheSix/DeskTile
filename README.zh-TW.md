@@ -2,7 +2,7 @@
 
 [English](README.md) · **繁體中文**
 
-**下載：** [Windows v1.03 免安裝 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.03/release/DeskTiles-Windows-x64.zip) · [僅下載 DeskTiles.exe](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.03/release/DeskTiles/DeskTiles.exe) · [macOS v1.02 Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip)
+**下載：** [Windows v1.05 免安裝 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles-Windows-x64.zip) · [僅下載 DeskTiles.exe](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles/DeskTiles.exe) · [macOS v1.02 Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip)
 
 Windows ZIP 同時包含命令列工具與使用說明。
 
@@ -223,8 +223,8 @@ Mac build.sh 先列出絕對路徑並執行核心檢查，建立標準／Retina 
 
 GitHub 的 macOS verified package 工作流程在圖示更新分支建置與驗證，再將通過的 ZIP、ICNS 與 SHA256 提交回相同分支；下載版只有在驗證通過後才整合至 main。workflow_dispatch 亦可手動重建。App 仍未申請 Apple 公證，Intel 硬體、多螢幕與各版本 macOS 的實機驗收限制沿用原版。
 
-Windows v1.03 已驗證重啟後的背景鬧鐘；程式關閉期間錯過的提醒不會補播。圖示更新不更動使用者版面或自動啟動設定。
-Windows 正式版為 v1.03，包含多套桌面配置與 CMD／PowerShell 命令列。macOS 維持 v1.02。兩平台的 Logo 皆沿用深灰細圈與透明外角。Windows PowerShell 腳本使用 UTF-8 BOM 以支援內建 5.1。
+Windows v1.05 已驗證重啟後的背景鬧鐘；程式關閉期間錯過的提醒不會補播。圖示更新不更動使用者版面或自動啟動設定。
+Windows 正式版為 v1.05，包含多套桌面配置與 CMD／PowerShell 命令列。macOS 維持 v1.02。兩平台的 Logo 皆沿用深灰細圈與透明外角。Windows PowerShell 腳本使用 UTF-8 BOM 以支援內建 5.1。
 
 圖示回歸：powershell -NoProfile -ExecutionPolicy Bypass -File verify-icons.ps1 -ExecutablePath <EXE絕對路徑>。腳本先列出圖示、EXE與結果絕對位置，逐尺寸檢查九個ICO的解碼、透明角落及平滑邊緣，再比對打包EXE內嵌圖示的每一個位元組並實際呼叫Windows圖示載入；結果存於build/icon-verification.txt。
 
@@ -263,3 +263,15 @@ desktiles-cli.exe tile delete --id 1
 4. `build.ps1` 依序定位工具鏈、編譯 GUI、編譯 CLI、執行核心測試及核對輸出。 `verify-layouts-cli.ps1` 使用獨立資料目錄，驗證 CMD、PowerShell、系統匣、重啟、儲存回復、背景倒數及實際鬧鐘。 `package.ps1` 將 GUI 和 CLI 一起打包；驗證腳本會列出絕對輸入／輸出路徑及各階段進度。
 
 此功能目前適用 Windows；macOS 套件尚未包含多套配置及這個 CLI。
+
+## 鼠尾草綠桌面配置（Windows）
+
+![DeskTile Windows 實際繪製的鼠尾草綠樣板](docs/sage-layout-preview.png)
+
+從系統匣選「桌面配置 → 從鼠尾草綠樣板建立…」，輸入名稱後會切換到一套新配置。程式將內建示範照片存入資料目錄，並建立可編輯的六角形筆記、可換圖的三角形照片和 25 分鐘倒數。倒數初始暫停，原配置和執行中的計時仍可繼續使用。樣板沿用目前桌布。
+
+在照片上按右鍵選「調整照片裁切…」，拖曳預覽可移動構圖，縮放範圍為 100～400%。換圖時裁切會回到置中及 100%。在「圖形大小與文字樣式…」勾選「套用大小」，可設定矩形寬 80～480 px、高 40～480 px，留空高度使用原本的 3:2。右鍵可對選取格切換「隱藏編號與狀態標籤」。
+
+照片先等比填滿，再依焦點、縮放及圖形輪廓裁切。矩形高度同時影響繪製、點擊、吸附及碰撞。JSON 可連同照片與新外觀設定匯出。使用新設定的配置需要支援此功能的 Windows 版。
+
+建置後執行 `./verify-sage.ps1`，會先列出絕對路徑，再用獨立資料目錄驗證樣板、編輯、儲存與切換計時。

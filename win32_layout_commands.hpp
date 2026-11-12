@@ -48,15 +48,15 @@ Json CliTile(const std::set<int>& hiddenTiles,const Tile& tile,bool active,bool 
 }
 void PlaceCliTile(const std::vector<Tile>& tiles,Tile& tile) {
     auto free=[&](Point p){
-        for(const auto& t:tiles)if(Overlaps(p,t.position,tile.size,t.size,tile.shape,t.shape))return false;
+        for(const auto& t:tiles)if(TilesOverlap(tile,t,p-tile.position))return false;
         return true;
     };
     RECT work{};SystemParametersInfoW(SPI_GETWORKAREA,0,&work,0);
     if(tiles.empty()){tile.position={double(work.left+80),double(work.top+100)};return;}
     for(const auto& reference:tiles)
-        for(auto offset:Neighbors(reference.size,tile.size,reference.shape,tile.shape)){
+        for(auto offset:Neighbors(reference.size,tile.size,reference.shape,tile.shape,nullptr,reference.rectangleHeight,tile.rectangleHeight)){
             auto p=reference.position+offset;
-            RECT bounds{LONG(p.x),LONG(p.y),LONG(p.x+tile.size),LONG(p.y+TileHeight(tile.size,tile.shape))};
+            RECT bounds{LONG(p.x),LONG(p.y),LONG(p.x+tile.size),LONG(p.y+TileHeight(tile))};
             if(free(p)&&MonitorFromRect(&bounds,MONITOR_DEFAULTTONULL)){tile.position=p;return;}
         }
     for(int y=work.top+20;y+PixelHeight(tile)<work.bottom;y+=40)
@@ -85,6 +85,7 @@ void ApplyCliTileOptions(Tile& tile,const CliOptions& options) {
         else if(*value=="triangle")tile.shape=Shape::Triangle;
         else if(*value=="rectangle")tile.shape=Shape::Rectangle;
         else throw std::runtime_error("Unknown tile shape: "+*value);
+        if(tile.shape!=Shape::Rectangle)tile.rectangleHeight=0;
     }
     if(auto value=find("--text")){
         if(value->size()>65536)throw std::runtime_error("Tile text exceeds 65536 bytes.");
@@ -99,6 +100,7 @@ void ApplyCliTileOptions(Tile& tile,const CliOptions& options) {
             Asset image;image.bytes=ReadBytes(path,ImageLimit);
             image.mime=ImageMime(image.bytes);ValidateAsset(image);
         }
+        if(tile.image!=*value){tile.photoFocus={.5,.5};tile.photoZoom=1;}
         tile.image=*value;
     }
     if(auto value=find("--x"))tile.position.x=CliNumber(*value,-1000000,1000000);
@@ -221,7 +223,7 @@ Json RunLayoutCommand(const CliArgs& args) {
     if(edit){
         ValidateTiles(p.tiles);
         if(verb=="add"||options.count("--x")||options.count("--y")||options.count("--size")||options.count("--shape"))
-            for(const auto& other:p.tiles)if(other.id!=id&&Overlaps(tile->position,other.position,tile->size,other.size,tile->shape,other.shape))
+            for(const auto& other:p.tiles)if(other.id!=id&&TilesOverlap(*tile,other))
                 throw std::runtime_error("The requested tile would overlap another tile.");
     }
     if(verb!="delete")response["tile"]=CliTile(p.hidden,*tile,active,true);

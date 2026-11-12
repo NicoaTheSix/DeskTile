@@ -8,7 +8,7 @@ DeskTiles puts notes, images, and timers into draggable hexagons, triangles, and
 
 | Platform | Version | Download |
 | --- | --- | --- |
-| Windows 10 / 11 x64 | v1.03 | [Portable ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.03/release/DeskTiles-Windows-x64.zip) · [DeskTiles.exe only](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.03/release/DeskTiles/DeskTiles.exe) |
+| Windows 10 / 11 x64 | v1.05 | [Portable ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles-Windows-x64.zip) · [DeskTiles.exe only](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.05/release/DeskTiles/DeskTiles.exe) |
 | macOS 12+ (Apple silicon / Intel) | v1.02 | [Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip) |
 
 **Windows:** Extract the complete ZIP and open `DeskTiles.exe`. Use the ZIP if you want `desktiles-cli.exe`, the guides, and the example layout. The portable app needs no installer, administrator rights, or separate runtime. To update, choose **Save and exit DeskTiles** from the tray before opening the replacement. Closing the control panel keeps the app running.
@@ -97,7 +97,7 @@ The source build requires Windows x64, PowerShell, Visual Studio with the C++ de
 
 The build and verification scripts print absolute input/output paths and stage progress. Tests use isolated data directories. Optional checks include `verify-language.ps1`, `verify-activation.ps1`, `verify-interaction.ps1`, `verify-features.ps1`, `verify-icons.ps1`, and `verify-package.ps1 -Composition`. Desktop composition tests require an interactive Windows desktop with Explorer; the optional Python-based tests also require their documented dependencies.
 
-Windows v1.03 passed 222 core checks, 192 checks on the unpacked Windows package, and 38 named-layout/CLI integration checks, including a background alarm after restart.
+Windows v1.05 passed 228 core checks, 192 checks on the unpacked Windows package, and 38 named-layout/CLI integration checks, including a background alarm after restart.
 
 | Path | Purpose |
 | --- | --- |
@@ -109,3 +109,24 @@ Windows v1.03 passed 222 core checks, 192 checks on the unpacked Windows package
 | `DeskTile_mac/` | Native AppKit implementation and Mac package. |
 
 The Windows app uses C++17, Win32, and GDI+. Tile input regions remain interactive even with a transparent background; the desktop layer depends on Explorer. JSON uses the bundled [nlohmann/json v3.12.0](https://github.com/nlohmann/json/releases/tag/v3.12.0). A Linux build is not currently available.
+
+## Sage desktop layout (Windows)
+
+![Sage layout rendered by DeskTiles for Windows](docs/sage-layout-preview.png)
+
+In the tray, choose **Desktop layouts → Create from Sage preset…** and enter a name. The app extracts its embedded photo into the data folder, creates a separate layout and switches to it. The previous layout and its active timers remain available. The preset contains an editable hexagonal note, a replaceable triangular photo and a paused 25-minute rectangular countdown. The app uses your existing desktop wallpaper.
+
+Right-click a photo and choose **Adjust photo crop…** to drag its framing and set 100–400% zoom. Replacing a photo resets the framing. In **Tile size and text style…**, enable sizing to set a rectangle's width (80–480 px) and height (40–480 px). A blank height uses the original 3:2 ratio. **Hide tile ID and status labels** applies to the selected tiles. Start or pause the countdown from the tile menu or control window.
+
+The renderer clips an aspect-fill image to the tile outline after applying the saved focus and zoom. Custom rectangles use the same dimensions for drawing, hit-testing, collisions and snap. JSON exports include the photo and presentation settings. Layouts using these settings require this Windows build.
+
+Run `./verify-sage.ps1` after building. It prints the input and output paths and verifies layout creation, editing, persistence and countdown switching with isolated test data.
+
+The bundled `assets/sage-gecko.jpg` is a JPEG export of a photo generated with the built-in image generation tool. The Portfolio mockup served as the visual reference.
+
+<details>
+<summary>Photo generation prompt</summary>
+
+Create a photorealistic landscape photograph for a DeskTile demo, using the attached product mockup only as subject, palette and framing reference. A golden-orange leopard gecko with spotted markings facing the camera, its head just below the frame center at x=50%, y=60%, both front legs visible below the head on dark slate. Warm directional light, softly blurred charcoal background, realistic natural details. Keep the animal in the center half of the frame with extra margins, so it will be visible when the application masks the image into a triangle. Deliver only the complete rectangular photograph, without any text, graphics, border, triangle or UI.
+
+</details>

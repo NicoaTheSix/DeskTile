@@ -88,6 +88,11 @@ inline Json BundleJson(const Bundle& bundle) {
                 {"width",t.borderWidth},{"cycleSeconds",t.rgbCycleSeconds},{"animated",t.rgbAnimated}}},
             {"typography",{{"family",t.fontFamily},{"size",t.fontSize},{"color",ColorText(t.textColor)}}},
             {"background",{{"color",ColorText(t.backgroundColor)},{"transparency",t.backgroundTransparency}}}});
+        if(HasPresentationSettings(t)) {
+            root["version"]=4;
+            root["tiles"].back()["presentation"]={{"rectangleHeight",t.rectangleHeight},{"hideLabels",t.hideLabels},
+                {"photoFocus",{{"x",t.photoFocus.x},{"y",t.photoFocus.y}}},{"photoZoom",t.photoZoom}};
+        }
     }
     for(const auto& item:bundle.images)root["images"][item.first]={{"mime",item.second.mime},{"data",Base64(item.second.bytes)}};
     return root;
@@ -108,7 +113,7 @@ inline std::uint32_t JsonColor(const Json& v) {
     std::uint32_t color=0;if(!ParseColor(JsonString(v,7),color))throw std::runtime_error("JSON 色碼無效");return color;
 }
 inline Bundle ReadBundle(const Json& root) {
-    if(!root.is_object() || root.at("format")!="HexDesk" || JsonInt(root.at("version"),1,3)<1 ||
+    if(!root.is_object() || root.at("format")!="HexDesk" || JsonInt(root.at("version"),1,4)<1 ||
         !root.at("tiles").is_array() || root.at("tiles").size()>500 || !root.at("images").is_object() || root.at("images").size()>500)
         throw std::runtime_error("不支援的桌面拼格 JSON 配置");
     Bundle bundle;size_t total=0;
@@ -144,13 +149,19 @@ inline Bundle ReadBundle(const Json& root) {
             t.alarm.lastFired=a.at("lastFired").get<std::int64_t>();
             if(!ValidAlarm(t.alarm))throw std::runtime_error("鬧鐘資料無效");
         }
+        if(root.at("version")>=4 && j.contains("presentation")) {
+            const auto& p=j.at("presentation");
+            t.rectangleHeight=JsonNumber(p.at("rectangleHeight"));t.hideLabels=JsonBool(p.at("hideLabels"));
+            t.photoFocus={JsonNumber(p.at("photoFocus").at("x")),JsonNumber(p.at("photoFocus").at("y"))};
+            t.photoZoom=JsonNumber(p.at("photoZoom"));
+        }
         t.notified=t.countdown && t.elapsed>=t.duration;bundle.tiles.push_back(std::move(t));
     }
     ValidateTiles(bundle.tiles);
     for(auto& t:bundle.tiles){if(t.countdown)t.elapsed=std::min(t.elapsed,t.duration);t.notified=t.countdown&&t.elapsed>=t.duration;}
     for(size_t i=0;i<bundle.tiles.size();++i)for(size_t j=i+1;j<bundle.tiles.size();++j) {
         const auto& a=bundle.tiles[i];const auto& b=bundle.tiles[j];
-        if(Overlaps(a.position,b.position,a.size,b.size,a.shape,b.shape))throw std::runtime_error("JSON 配置內的圖形彼此重疊");
+        if(TilesOverlap(a,b))throw std::runtime_error("JSON 配置內的圖形彼此重疊");
     }
     return bundle;
 }
@@ -172,15 +183,15 @@ inline std::vector<Tile> Merge(const std::vector<Tile>& existing,const std::vect
     auto valid=[&](Point delta) {
         for(const auto& a:added) {
             if(std::abs(a.position.x+delta.x)>1000000 || std::abs(a.position.y+delta.y)>1000000)return false;
-            for(const auto& b:existing)if(Overlaps(a.position+delta,b.position,a.size,b.size,a.shape,b.shape))return false;
+            for(const auto& b:existing)if(TilesOverlap(a,b,delta))return false;
         }
         return true;
     };
     Point delta{};
     if(!added.empty() && !existing.empty() && !valid(delta)) {
         double right=existing[0].position.x+existing[0].size,left=added[0].position.x;
-        double bottom=existing[0].position.y+TileHeight(existing[0].size,existing[0].shape),top=added[0].position.y;
-        for(const auto& t:existing){right=std::max(right,t.position.x+t.size);bottom=std::max(bottom,t.position.y+TileHeight(t.size,t.shape));}
+        double bottom=existing[0].position.y+TileHeight(existing[0]),top=added[0].position.y;
+        for(const auto& t:existing){right=std::max(right,t.position.x+t.size);bottom=std::max(bottom,t.position.y+TileHeight(t));}
         for(const auto& t:added){left=std::min(left,t.position.x);top=std::min(top,t.position.y);}
         delta={right-left+24,0};if(!valid(delta)){delta={0,bottom-top+24};if(!valid(delta))throw std::runtime_error("無法找到合併後的有效位置");}
     }

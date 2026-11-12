@@ -119,7 +119,7 @@ int main(int argc,char** argv) {
         auto largePixel=BorderOutline(BorderStyle::Pixel,8,480);
         Check(std::all_of(largePixel.begin(),largePixel.end(),[](Point p){return p.x>=0 && p.x<=480 && p.y>=0 && p.y<=TileHeight(480);}),"resized pixel outline bounds");
         std::cout << "[7/12] Invalid input\n";
-        for (const auto& text:{"broken", "HEXDESK 7\n0", "HEXDESK 1\n501",
+        for (const auto& text:{"broken", "HEXDESK 8\n0", "HEXDESK 1\n501",
              "HEXDESK 1\n1\n1 0 0 5 1 1 300 0 \"x\" \"\"",
              "HEXDESK 1\n1\n1 0 0 0 1 1 -1 0 \"x\" \"\"",
              "HEXDESK 1\n0\ngarbage"}) {
@@ -327,6 +327,30 @@ int main(int argc,char** argv) {
         auto startupCommand=desktile_startup::Command(L"D:\\My Apps\\DeskTiles.exe",L"D:\\My Data\\");
         Check(startupCommand==L"\"D:\\My Apps\\DeskTiles.exe\" --startup --data-dir \"D:\\My Data\\\\\"","startup command quotes spaces and trailing directory slash");
         Check(desktile_startup::Command(L"D:\\bad\".exe",L"D:\\Data").empty(),"invalid quoted executable rejected");
+
+        std::cout << "[Presentation] Rectangles, photo crop, JSON and native storage\n";
+        Tile wide;wide.id=1;wide.shape=Shape::Rectangle;wide.size=350;wide.rectangleHeight=103;wide.hideLabels=true;
+        Tile photo;photo.id=2;photo.kind=Kind::Image;photo.shape=Shape::Triangle;
+        photo.position={400,0};photo.photoFocus={.25,.7};photo.photoZoom=1.5;
+        Tile above=wide;above.position={0,-103};
+        Check(TileHeight(wide)==103&&!TilesOverlap(wide,above)&&TilesOverlap(wide,above,{0,-2}),
+            "independent rectangle height determines contact");
+        const auto frame=FitPhoto(600,300,200,200,{.25,.7},2);
+        Check(frame.x==-150&&std::abs(frame.y+140)<1e-9&&frame.width==800&&frame.height==400,
+            "photo focus and zoom preserve coverage");
+        std::vector<Tile> custom{wide,photo};
+        Check(Resize(custom,{1},1,350,75)&&TileHeight(custom[0])==75,"resize rectangle height independently");
+        Bundle display;display.tiles=custom;
+        auto displayJson=BundleJson(display);
+        auto displayLoaded=ReadBundle(displayJson);
+        Check(displayJson["version"]==4&&displayLoaded.tiles[0].rectangleHeight==75&&displayLoaded.tiles[0].hideLabels&&
+            displayLoaded.tiles[1].photoFocus.y==.7&&displayLoaded.tiles[1].photoZoom==1.5,"presentation JSON roundtrip");
+        std::stringstream customSave;Save(customSave,custom);auto customLoaded=Load(customSave);
+        Check(customLoaded[0].rectangleHeight==75&&customLoaded[0].hideLabels&&customLoaded[1].photoFocus.x==.25,
+            "presentation native roundtrip");
+        displayJson["tiles"][1]["presentation"]["photoZoom"]=5;
+        bool badCrop=false;try{ReadBundle(displayJson);}catch(const std::exception&){badCrop=true;}
+        Check(badCrop,"reject out-of-range photo zoom");
 
         std::cout << "PASS: " << checks << " checks\n";
         return 0;

@@ -11,6 +11,8 @@ Write-Host "JSON 相依檔案：$(Join-Path $sourceRoot 'third_party\nlohmann\js
 Write-Host "鬧鐘核心輸入：$(Join-Path $sourceRoot 'alarm.hpp')"
 Write-Host "啟動同意規則輸入：$(Join-Path $sourceRoot 'startup.hpp')"
 Write-Host "Windows 新功能輸入：$(Join-Path $sourceRoot 'win32_features.hpp')"
+Write-Host "照片裁切輸入：$(Join-Path $sourceRoot 'win32_photo.hpp')"
+Write-Host "鼠尾草綠照片輸入：$(Join-Path $sourceRoot 'assets\sage-gecko.jpg')"
 Write-Host "桌面配置輸入：$(Join-Path $sourceRoot 'layouts.hpp')、$(Join-Path $sourceRoot 'win32_layouts.hpp')"
 Write-Host "命令列輸入：$(Join-Path $sourceRoot 'desktiles_cli.cpp')、$(Join-Path $sourceRoot 'win32_layout_commands.hpp')、$(Join-Path $sourceRoot 'win32_cli_transport.hpp')"
 Write-Host "命令列輸出：$(Join-Path $outputRoot 'desktiles-cli.exe')"

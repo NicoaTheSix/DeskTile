@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
+#include <optional>
 #include <istream>
 #include <ostream>
 #include <set>
@@ -44,9 +45,31 @@ struct Tile {
     std::uint32_t textColor = 0xEBF4F5;
     std::uint32_t backgroundColor = 0x172730;
     double backgroundTransparency = 0;
+    double rectangleHeight = 0;
+    Point photoFocus{.5,.5};
+    double photoZoom = 1;
+    bool hideLabels = false;
 };
-inline double TileHeight(double size,Shape shape=Shape::Hexagon) {
-    return shape==Shape::Rectangle?size*2/3:size*std::sqrt(3.0)/2;
+inline double TileHeight(double size,Shape shape=Shape::Hexagon,double rectangleHeight=0) {
+    return shape==Shape::Rectangle?(rectangleHeight>0?rectangleHeight:size*2/3):size*std::sqrt(3.0)/2;
+}
+inline double TileHeight(const Tile& tile) {
+    return TileHeight(tile.size,tile.shape,tile.rectangleHeight);
+}
+inline bool HasPresentationSettings(const Tile& tile) {
+    return tile.rectangleHeight!=0 || tile.photoFocus.x!=.5 || tile.photoFocus.y!=.5 ||
+        tile.photoZoom!=1 || tile.hideLabels;
+}
+inline bool ValidPresentationSettings(const Tile& tile) {
+    const auto inRange=[](double value,double min,double max){return value>=min && value<=max;};
+    return (tile.rectangleHeight==0 || (tile.shape==Shape::Rectangle&&inRange(tile.rectangleHeight,40,480))) &&
+        inRange(tile.photoFocus.x,0,1) && inRange(tile.photoFocus.y,0,1) && inRange(tile.photoZoom,1,4);
+}
+struct PhotoFrame { double x,y,width,height; };
+inline PhotoFrame FitPhoto(double sourceWidth,double sourceHeight,double width,double height,Point focus,double zoom) {
+    const double scale=std::max(width/sourceWidth,height/sourceHeight)*zoom;
+    const double scaledWidth=sourceWidth*scale,scaledHeight=sourceHeight*scale;
+    return {(width-scaledWidth)*focus.x,(height-scaledHeight)*focus.y,scaledWidth,scaledHeight};
 }
 inline bool SameTypography(const Tile& a,const Tile& b) {
     return a.fontFamily==b.fontFamily && a.fontSize==b.fontSize && a.textColor==b.textColor;
@@ -96,8 +119,8 @@ inline double ColorHue(std::uint32_t color) {
     double hue=hi==r?(g-b)/range:hi==g?2+(b-r)/range:4+(r-g)/range;
     return hue/6-std::floor(hue/6);
 }
-inline std::vector<Point> BorderOutline(BorderStyle style,double inset,double size=Width,Shape shape=Shape::Hexagon) {
-    double height=TileHeight(size,shape);
+inline std::vector<Point> BorderOutline(BorderStyle style,double inset,double size=Width,Shape shape=Shape::Hexagon,double rectangleHeight=0) {
+    double height=TileHeight(size,shape,rectangleHeight);
     std::vector<Point> corners;
     if(shape==Shape::Rectangle)corners={{inset,inset},{size-inset,inset},{size-inset,height-inset},{inset,height-inset}};
     else {
@@ -123,8 +146,10 @@ inline std::vector<Point> BorderOutline(BorderStyle style,double inset,double si
     return steps;
 }
 inline double Cross(Point a,Point b,Point c){return (b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);}
-inline std::vector<Point> ContactBoundary(double fixedSize,double movingSize,Shape fixedShape,Shape movingShape) {
-    auto fixed=BorderOutline(BorderStyle::Solid,0,fixedSize,fixedShape),moving=BorderOutline(BorderStyle::Solid,0,movingSize,movingShape);
+inline std::vector<Point> ContactBoundary(double fixedSize,double movingSize,Shape fixedShape,Shape movingShape,
+        double fixedHeight=0,double movingHeight=0) {
+    auto fixed=BorderOutline(BorderStyle::Solid,0,fixedSize,fixedShape,fixedHeight);
+    auto moving=BorderOutline(BorderStyle::Solid,0,movingSize,movingShape,movingHeight);
     std::vector<Point> points;for(auto a:fixed)for(auto b:moving)points.push_back(a-b);
     std::sort(points.begin(),points.end(),[](Point a,Point b){return a.x==b.x?a.y<b.y:a.x<b.x;});
     points.erase(std::unique(points.begin(),points.end(),[](Point a,Point b){return a.x==b.x&&a.y==b.y;}),points.end());
@@ -135,9 +160,9 @@ inline std::vector<Point> ContactBoundary(double fixedSize,double movingSize,Sha
     hull.pop_back();return hull;
 }
 inline std::vector<Point> Neighbors(double fixedSize=Width,double movingSize=Width,
-        Shape fixedShape=Shape::Hexagon,Shape movingShape=Shape::Hexagon,const Point* preferred=nullptr) {
+        Shape fixedShape=Shape::Hexagon,Shape movingShape=Shape::Hexagon,const Point* preferred=nullptr,double fixedHeight=0,double movingHeight=0) {
     if(fixedShape!=Shape::Hexagon || movingShape!=Shape::Hexagon) {
-        auto hull=ContactBoundary(fixedSize,movingSize,fixedShape,movingShape);std::vector<Point> contacts;
+        auto hull=ContactBoundary(fixedSize,movingSize,fixedShape,movingShape,fixedHeight,movingHeight);std::vector<Point> contacts;
         for(size_t i=0;i<hull.size();++i) {
             auto a=hull[i],b=hull[(i+1)%hull.size()];contacts.push_back({(a.x+b.x)/2,(a.y+b.y)/2});
         }
@@ -159,11 +184,11 @@ inline std::vector<Point> Neighbors(double fixedSize=Width,double movingSize=Wid
     return directions;
 }
 inline bool Overlaps(Point a, Point b,double aSize=Width,double bSize=Width,
-        Shape aShape=Shape::Hexagon,Shape bShape=Shape::Hexagon) {
-    double aH=TileHeight(aSize,aShape),bH=TileHeight(bSize,bShape);
+        Shape aShape=Shape::Hexagon, Shape bShape=Shape::Hexagon,double aHeight=0,double bHeight=0) {
+    double aH=TileHeight(aSize,aShape,aHeight),bH=TileHeight(bSize,bShape,bHeight);
     if(aShape!=Shape::Hexagon || bShape!=Shape::Hexagon) {
         if(a.x+aSize<=b.x+.6 || b.x+bSize<=a.x+.6 || a.y+aH<=b.y+.6 || b.y+bH<=a.y+.6)return false;
-        auto first=BorderOutline(BorderStyle::Solid,0,aSize,aShape),second=BorderOutline(BorderStyle::Solid,0,bSize,bShape);
+        auto first=BorderOutline(BorderStyle::Solid,0,aSize,aShape,aHeight),second=BorderOutline(BorderStyle::Solid,0,bSize,bShape,bHeight);
         for(auto& p:first)p=p+a;for(auto& p:second)p=p+b;
         for(const auto* polygon:{&first,&second})for(size_t i=0;i<polygon->size();++i) {
             auto edge=(*polygon)[(i+1)%polygon->size()]-(*polygon)[i];double length=std::hypot(edge.x,edge.y);
@@ -180,6 +205,9 @@ inline bool Overlaps(Point a, Point b,double aSize=Width,double bSize=Width,
     // Minkowski sum of aligned regular hexagons, including unequal sizes.
     return dy<(aH+bH)/2-0.6 && std::sqrt(3.0)*dx+dy<aH+bH-0.6;
 }
+inline bool TilesOverlap(const Tile& a,const Tile& b,Point delta={}) {
+    return Overlaps(a.position+delta,b.position,a.size,b.size,a.shape,b.shape,a.rectangleHeight,b.rectangleHeight);
+}
 inline bool Select(std::set<int>& selected, int id, bool shift) {
     if (shift) {
         if (selected.count(id)) selected.erase(id); else selected.insert(id);
@@ -191,7 +219,7 @@ inline bool Select(std::set<int>& selected, int id, bool shift) {
 inline bool ValidDelta(const std::vector<Tile>& tiles, const std::set<int>& selected, Point delta) {
     for (const auto& moving : tiles) if (selected.count(moving.id))
         for (const auto& fixed : tiles) if (!selected.count(fixed.id))
-            if (Overlaps(moving.position+delta, fixed.position,moving.size,fixed.size,moving.shape,fixed.shape)) return false;
+            if (TilesOverlap(moving,fixed,delta)) return false;
     return true;
 }
 inline Point Snap(const std::vector<Tile>& tiles, const std::set<int>& selected, Point desired,
@@ -201,7 +229,7 @@ inline Point Snap(const std::vector<Tile>& tiles, const std::set<int>& selected,
     for (const auto& moving : tiles) if (selected.count(moving.id))
         for (const auto& fixed : tiles) if (!selected.count(fixed.id)) {
             auto preferred=moving.position+desired-fixed.position;
-            auto directions=Neighbors(fixed.size,moving.size,fixed.shape,moving.shape,&preferred);
+            auto directions=Neighbors(fixed.size,moving.size,fixed.shape,moving.shape,&preferred,fixed.rectangleHeight,moving.rectangleHeight);
             size_t aligned=(fixed.shape==Shape::Hexagon&&moving.shape==Shape::Hexagon)?directions.size():directions.size()*2/3;
             for (size_t i=0;i<directions.size();++i) {
                 auto direction=directions[i];
@@ -224,7 +252,7 @@ inline Point Snap(const std::vector<Tile>& tiles, const std::set<int>& selected,
 inline void Move(std::vector<Tile>& tiles, const std::set<int>& selected, Point delta) {
     for (auto& tile:tiles) if (selected.count(tile.id)) tile.position=tile.position+delta;
 }
-inline bool Resize(std::vector<Tile>& tiles,const std::set<int>& selected,int anchor,double size) {
+inline bool Resize(std::vector<Tile>& tiles,const std::set<int>& selected,int anchor,double size,std::optional<double> rectangleHeight=std::nullopt) {
     if(!std::isfinite(size) || size<80 || size>480 || selected.empty() || !selected.count(anchor))return false;
     auto at=std::find_if(tiles.begin(),tiles.end(),[&](const Tile& t){return t.id==anchor;});
     if(at==tiles.end())return false;
@@ -232,10 +260,12 @@ inline bool Resize(std::vector<Tile>& tiles,const std::set<int>& selected,int an
     auto candidate=tiles;
     for(auto& t:candidate)if(selected.count(t.id)) {
         t.position=origin+Point{(t.position.x-origin.x)*ratio,(t.position.y-origin.y)*ratio};t.size=size;
+        if(rectangleHeight && t.shape==Shape::Rectangle)t.rectangleHeight=*rectangleHeight;
+        if(!ValidPresentationSettings(t))return false;
     }
     for(size_t i=0;i<candidate.size();++i)for(size_t j=i+1;j<candidate.size();++j) {
         const auto& a=candidate[i];const auto& b=candidate[j];
-        if((selected.count(a.id)||selected.count(b.id)) && Overlaps(a.position,b.position,a.size,b.size,a.shape,b.shape))return false;
+        if((selected.count(a.id)||selected.count(b.id)) && TilesOverlap(a,b))return false;
     }
     tiles=std::move(candidate);return true;
 }
@@ -257,9 +287,11 @@ inline std::string Clock(const Tile& tile) {
     return out.str();
 }
 inline void Save(std::ostream& out, const std::vector<Tile>& tiles) {
-    out << "HEXDESK 6\n" << tiles.size() << '\n' << std::setprecision(17);
+    const bool presentation=std::any_of(tiles.begin(),tiles.end(),HasPresentationSettings);
+    out << "HEXDESK " << (presentation?7:6) << '\n' << tiles.size() << '\n' << std::setprecision(17);
     for (const auto& t:tiles) {
         if(!ValidAlarm(t.alarm))throw std::runtime_error("鬧鐘資料無效");
+        if(!ValidPresentationSettings(t))throw std::runtime_error("Invalid tile presentation settings.");
         out << t.id << ' ' << t.position.x << ' ' << t.position.y << ' '
             << static_cast<int>(t.kind) << ' ' << t.topmost << ' ' << t.countdown << ' '
             << t.duration << ' ' << t.elapsed << ' ' << std::quoted(t.text) << ' '
@@ -267,13 +299,16 @@ inline void Save(std::ostream& out, const std::vector<Tile>& tiles) {
             << ' ' << t.borderWidth << ' ' << t.rgbCycleSeconds << ' ' << t.rgbAnimated
             << ' ' << t.size << ' ' << std::quoted(t.fontFamily) << ' ' << t.fontSize << ' ' << t.textColor
             << ' ' << t.backgroundColor << ' ' << t.backgroundTransparency << ' ' << static_cast<int>(t.shape) << ' ' << static_cast<int>(t.alarm.repeat) << ' ' << t.alarm.minute
-            << ' ' << t.alarm.weekdays << ' ' << std::quoted(t.alarm.date) << ' ' << t.alarm.enabled << ' ' << t.alarm.lastFired << '\n';
+            << ' ' << t.alarm.weekdays << ' ' << std::quoted(t.alarm.date) << ' ' << t.alarm.enabled << ' ' << t.alarm.lastFired;
+        if(presentation)out << ' ' << t.rectangleHeight << ' ' << t.photoFocus.x << ' ' <<
+            t.photoFocus.y << ' ' << t.photoZoom << ' ' << t.hideLabels;
+        out << '\n';
     }
     if (!out) throw std::runtime_error("寫入版面失敗");
 }
 inline std::vector<Tile> Load(std::istream& in) {
     std::string magic; int version=0; size_t count=0;
-    if (!(in>>magic>>version>>count) || magic!="HEXDESK" || version<1 || version>6 || count>500)
+    if (!(in>>magic>>version>>count) || magic!="HEXDESK" || version<1 || version>7 || count>500)
         throw std::runtime_error("不支援的版面格式，或格子超過 500 個");
     std::vector<Tile> result; std::set<int> ids;
     for (size_t i=0;i<count;++i) {
@@ -319,6 +354,13 @@ inline std::vector<Tile> Load(std::istream& in) {
                 repeat<0||repeat>2||(enabled!=0&&enabled!=1))throw std::runtime_error("鬧鐘資料無效");
             t.alarm.repeat=static_cast<AlarmRepeat>(repeat);t.alarm.enabled=enabled!=0;
             if(!ValidAlarm(t.alarm))throw std::runtime_error("鬧鐘資料無效");
+        }
+        if(version>=7) {
+            int hideLabels=0;
+            if(!(in>>t.rectangleHeight>>t.photoFocus.x>>t.photoFocus.y>>t.photoZoom>>hideLabels) ||
+                (hideLabels!=0&&hideLabels!=1) || !ValidPresentationSettings(t))
+                throw std::runtime_error("Invalid tile presentation settings.");
+            t.hideLabels=hideLabels!=0;
         }
         if (t.countdown) t.elapsed=std::min(t.elapsed,t.duration);
         t.notified=t.countdown && t.elapsed>=t.duration;
