@@ -48,8 +48,8 @@ void ActivateStoredProfiles() {
         app.catalog.profiles.emplace(1,std::move(initial));
     }
 }
-void ApplyCatalog(LayoutCatalog next,int changedTile=0) {
-    const bool switching=next.active!=app.catalog.active;
+void ApplyCatalog(LayoutCatalog next,int changedTile=0,bool rebuild=false) {
+    const bool switching=next.active!=app.catalog.active||rebuild;
     const bool changingView=switching||changedTile!=0;
     auto& profile=next.current();
     const auto oldNext=app.nextId;
@@ -107,7 +107,7 @@ void ApplyCatalog(LayoutCatalog next,int changedTile=0) {
         for(auto& tile:app.tiles)if(switching||tile.id==changedTile){Position(tile);PresentTile(tile);}
         UpdateAnimation();RefreshControls();
     }
-    UpdateClock();
+    UpdateClock();desktools::Record();desktools::RefreshDesktop();
     Status(std::wstring(LayoutLabel(L"[配置 3/3] 已儲存；目前：",L"[Layouts 3/3] Saved; active: "))+Wide(app.catalog.current().name));
 }
 void PrepareLayoutEdit() {

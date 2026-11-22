@@ -3,8 +3,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <objidl.h>
+#include <ole2.h>
 #include <windowsx.h>
 #include <shellapi.h>
+#include <shlobj.h>
 #include <commdlg.h>
 #include <psapi.h>
 #include <bcrypt.h>
@@ -26,8 +28,10 @@
 #include "win32_cli_transport.hpp"
 #include "localization.hpp"
 #include "startup.hpp"
+#include "steam_service.hpp"
 using namespace desktile_ui;
 #pragma comment(lib,"user32.lib")
+#pragma comment(lib,"ole32.lib")
 #pragma comment(lib,"gdi32.lib")
 #pragma comment(lib,"gdiplus.lib")
 #pragma comment(lib,"shell32.lib")
@@ -150,7 +154,7 @@ struct App {
     fs::path directory,statePath,logPath;
     std::ofstream log;
     bool loadingControls=false,dragging=false,moved=false,savingFailed=false,exiting=false;
-    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false,trayLayoutOnly=false,bevelOnly=false,sageOnly=false;
+    bool smoke=false,sharedClock=false,interactionOnly=false,demoCapture=false,languageOnly=false,trayLayoutOnly=false,bevelOnly=false,sageOnly=false,convenienceOnly=false;
     std::map<HWND,const Translation*> uiLabels;
     Point dragStart,dragDelta;
     HWND dragWindow=nullptr;
@@ -213,6 +217,12 @@ LayoutCatalog CurrentCatalog();
 void WriteCatalog(const LayoutCatalog&);
 void AddProfileMenu(HMENU);
 bool ProfileMenuCommand(int);
+namespace desktools {
+bool Hidden();bool Muted();bool Locked(int);bool ThroughTile(int);bool Editing();
+void Record();void RefreshDesktop();void BeginInline(int);void FinishInline(bool);void AddMenu(HMENU);
+bool HandleCommand(int);bool Message(HWND,UINT,WPARAM,LPARAM);
+bool Accelerator(const MSG&);void Start();void Stop();
+}
 Tile* Find(int id) { for(auto& t:app.tiles) if(t.id==id) return &t; return nullptr; }
 void Log(const std::wstring& message) {
     SYSTEMTIME now; GetLocalTime(&now);
@@ -245,7 +255,7 @@ Point DisplayPosition(const Tile& t) {
 void Position(Tile& t) {
     auto it=app.views.find(t.id); if(it==app.views.end()) return;
     HWND window=it->second.window;
-    if(app.hidden.count(t.id)||app.stagingViews){ShowWindow(window,SW_HIDE);return;}
+    if(app.hidden.count(t.id)||app.stagingViews||desktools::Hidden()){ShowWindow(window,SW_HIDE);return;}
     auto p=DisplayPosition(t);
     POINT point{static_cast<LONG>(std::lround(p.x)),static_cast<LONG>(std::lround(p.y))};
     // Both modes remain top-level popups, so positions are always screen coordinates.
@@ -486,12 +496,17 @@ void DrawTile(HDC dc,Tile& tile) {
     Graphics target(dc);target.DrawImage(&bitmap,0,0);
 }
 void PresentTile(Tile& tile) {
-    if(app.stagingViews||app.hidden.count(tile.id))return;
+    if(app.stagingViews||app.hidden.count(tile.id)||desktools::Hidden())return;
     auto& view=app.views[tile.id];if(!view.visual)return;
     auto& frame=RenderTile(tile);SIZE size{frame.width,frame.height};POINT origin{};
-    SetWindowPos(view.visual,nullptr,0,0,size.cx,size.cy,SWP_NOZORDER|SWP_NOACTIVATE|SWP_SHOWWINDOW);
+    const bool through=desktools::ThroughTile(tile.id);
+    HWND target=through?view.window:view.visual;POINT destination{};
+    if(through){
+        const auto position=DisplayPosition(tile);
+        destination={LONG(std::lround(position.x)),LONG(std::lround(position.y))};
+    }else SetWindowPos(view.visual,nullptr,0,0,size.cx,size.cy,SWP_NOZORDER|SWP_NOACTIVATE|SWP_SHOWWINDOW);
     BLENDFUNCTION blend{AC_SRC_OVER,0,255,AC_SRC_ALPHA};
-    if(!UpdateLayeredWindow(view.visual,nullptr,nullptr,&size,frame.dc,&origin,0,&blend,ULW_ALPHA)) {
+    if(!UpdateLayeredWindow(target,nullptr,through?&destination:nullptr,&size,frame.dc,&origin,0,&blend,ULW_ALPHA)) {
         ++app.layeredErrors;
         if(!view.presentationFailed)Error(Tr(L"透明畫面更新失敗，Windows 錯誤：")+std::to_wstring(GetLastError()));
         view.presentationFailed=true;
@@ -529,7 +544,11 @@ void CreateTileWindow(Tile& t) {
     app.views[t.id].visual=CreateWindowExW(WS_EX_LAYERED|WS_EX_TRANSPARENT|WS_EX_NOACTIVATE,VisualClass,L"",WS_CHILD|WS_VISIBLE,
         0,0,PixelWidth(t),PixelHeight(t),window,nullptr,app.instance,nullptr);
     if(!app.views[t.id].visual)throw std::runtime_error("無法建立透明顯示層");
-    UpdateTileRegion(t);
+    if(desktools::ThroughTile(t.id)){
+        SetWindowLongPtrW(window,GWL_EXSTYLE,GetWindowLongPtrW(window,GWL_EXSTYLE)|WS_EX_LAYERED|WS_EX_TRANSPARENT);
+        ShowWindow(app.views[t.id].visual,SW_HIDE);
+    }
+    UpdateTileRegion(t);DragAcceptFiles(window,TRUE);
     LoadImage(t);
     if(!SetLayer(t,t.topmost)) {
         if(app.stagingViews)throw std::runtime_error("The requested desktop layer is not available.");
@@ -541,7 +560,7 @@ void CreateTileWindow(Tile& t) {
 void SaveState() {
     if(app.exiting) return;
     try {
-        if(app.profileMode){WriteCatalog(CurrentCatalog());app.savingFailed=false;return;}
+        if(app.profileMode){WriteCatalog(CurrentCatalog());app.savingFailed=false;desktools::Record();return;}
         auto temporary=app.directory/L"layout.tmp";
         { std::ofstream out(temporary,std::ios::binary|std::ios::trunc); Save(out,app.tiles); out.close();
           if(!out) throw std::runtime_error("無法完成版面寫入"); }
@@ -551,7 +570,7 @@ void SaveState() {
         }
         if(!MoveFileExW(temporary.c_str(),app.statePath.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH))
             throw std::runtime_error("無法替換版面，已保留原始檔案");
-        app.savingFailed=false;
+        app.savingFailed=false;desktools::Record();
     } catch(const std::exception& e) {
         if(!app.savingFailed) Error(LocalizeError(Wide(e.what())));
         app.savingFailed=true;
@@ -569,7 +588,7 @@ void UpdateClock() {
     } else if(!running && app.sharedClock) { KillTimer(app.control,1); app.sharedClock=false; }
 }
 void UpdateAnimation() {
-    bool needed=std::any_of(app.tiles.begin(),app.tiles.end(),[](const Tile& t){return !app.hidden.count(t.id)&&AnimatedBorder(t);});
+    bool needed=!desktools::Hidden()&&std::any_of(app.tiles.begin(),app.tiles.end(),[](const Tile& t){return !app.hidden.count(t.id)&&AnimatedBorder(t);});
     if(needed && !app.animationTimer) {
         app.animationTimer=SetTimer(app.control,3,83,nullptr)!=0;
     } else if(!needed && app.animationTimer) {KillTimer(app.control,3);app.animationTimer=false;}
@@ -635,11 +654,12 @@ void EndDrag(bool commit) {
     app.dragOriginal.clear();app.dragSelection.clear();
     if(GetCapture()==owner)ReleaseCapture();
     RefreshControls();UpdateSelectionVisuals(previousSelection);
-    if(commit && !moved && edit && !shift)ShowControl();
+    if(commit && !moved && edit && !shift)desktools::BeginInline(id);
 }
 void BeginDrag(int id,Point cursor,bool shift,bool doubleClick=false) {
     EndDrag(false);
     if(!Find(id))return;
+    if(desktools::Locked(id)){app.selection={id};app.primary=id;RefreshControls();Repaint();if(doubleClick)desktools::BeginInline(id);return;}
     auto previousSelection=app.selection;
     app.dragWasSelected=app.selection.count(id)!=0;app.dragShift=shift;app.dragDoubleClick=doubleClick;
     if(!app.dragWasSelected) {
@@ -662,6 +682,7 @@ void DragTo(Point cursor) {
         Log(Tr(L"拖曳輸入：目前選取圖形；輸出：")+app.statePath.wstring());
         Status(Tr(L"[拖曳 1/2] 移動預覽；放開滑鼠後保存。"));
     }
+    if(std::any_of(app.dragSelection.begin(),app.dragSelection.end(),[](int id){return desktools::Locked(id);}))return;
     app.moved=true;app.dragDelta=Snap(app.dragOriginal,app.dragSelection,desired);
     for(auto& tile:app.tiles)if(app.dragSelection.count(tile.id))Position(tile);
 }
@@ -813,6 +834,7 @@ void AddTray() {
 HMENU BuildTileMenu(bool trayMenu) {
     HMENU menu=CreatePopupMenu();
     if(trayMenu)AddProfileMenu(menu);
+    desktools::AddMenu(menu);
     AppendMenuW(menu,MF_STRING,IdEdit,Tr(L"開啟控制視窗"));
     HMENU shapes=CreatePopupMenu();
     AppendMenuW(shapes,MF_STRING,IdAddHex,Tr(L"六角形（預設）"));AppendMenuW(shapes,MF_STRING,IdAddTriangle,Tr(L"三角形"));
@@ -871,6 +893,9 @@ void Popup(HWND window,int id,POINT point,bool trayMenu=false) {
     if(result) Command(result);
 }
 void Command(int id) {
+    desktools::FinishInline(true);
+    if(desktools::Editing())return;
+    if(desktools::HandleCommand(id))return;
     if(ProfileMenuCommand(id))return;
     switch(id) {
     case IdEdit:ShowControl();break;
@@ -953,7 +978,7 @@ void Command(int id) {
         if(app.savingFailed && !app.smoke) {
             if(MessageBoxW(app.control,Tr(L"版面尚未成功儲存，仍要結束嗎？"),Tr(L"儲存失敗"),MB_YESNO|MB_ICONWARNING)!=IDYES) break;
         }
-        app.exiting=true; PostQuitMessage(app.processExit);break;
+        desktools::Stop();app.exiting=true; PostQuitMessage(app.processExit);break;
     }
 }
 HWND WidgetFor(HWND parent,std::map<int,HWND>& widgets,int id,const wchar_t* klass,const wchar_t* text,DWORD style,int x,int y,int w,int h) {
@@ -1435,6 +1460,8 @@ bool ImportConfig(const fs::path& requested,bool merge) {
             (missingFonts?Tr(L" 部分字體使用系統替代字體。"):L""));return true;
     }catch(const std::exception& e){Error(Tr(L"JSON 匯入失敗：")+LocalizeError(Wide(e.what())));return false;}
 }
+#include "win32_convenience.hpp"
+
 void ChooseExport() {
     wchar_t name[32768]=L"DeskTiles-config.json";OPENFILENAMEW dialog{sizeof(dialog)};
     dialog.hwndOwner=app.control;dialog.lpstrFile=name;dialog.nMaxFile=32768;
@@ -1589,6 +1616,7 @@ LRESULT CALLBACK TileProc(HWND window,UINT message,WPARAM w,LPARAM l) {
         SetWindowLongPtrW(window,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(create->lpCreateParams));
     }
     int id=static_cast<int>(GetWindowLongPtrW(window,GWLP_USERDATA));
+    if(desktools::Message(window,message,w,l))return 0;
     switch(message) {
     case WM_MOUSEACTIVATE:if(auto* tile=Find(id);tile && !tile->topmost)return MA_NOACTIVATE;break;
     case WM_DWMCOMPOSITIONCHANGED:
@@ -1648,6 +1676,7 @@ LRESULT CALLBACK ControlProc(HWND window,UINT message,WPARAM w,LPARAM l) {
         for(auto& t:app.tiles) if(!IsWindow(app.views[t.id].window)) CreateTileWindow(t);
         return 0;
     }
+    if(desktools::Message(window,message,w,l))return 0;
     switch(message) {
     case WM_ERASEBKGND: {RECT r;GetClientRect(window,&r);FillRect(reinterpret_cast<HDC>(w),&r,app.background);return 1;}
     case WM_CTLCOLORSTATIC:SetBkMode(reinterpret_cast<HDC>(w),TRANSPARENT);SetTextColor(reinterpret_cast<HDC>(w),RGB(42,62,69));return reinterpret_cast<LRESULT>(app.background);
@@ -1968,7 +1997,7 @@ void SmokeInteraction() {
     Log(L"互動測試輸入：專用測試版面；輸出："+app.directory.wstring());
     auto original=app.tiles;auto originalSelection=app.selection;int originalPrimary=app.primary;
     auto reset=[&]() {
-        EndDrag(false);app.tiles=original;app.selection=originalSelection;app.primary=originalPrimary;
+        desktools::FinishInline(false);EndDrag(false);app.tiles=original;app.selection=originalSelection;app.primary=originalPrimary;
         for(auto& tile:app.tiles)Position(tile);RefreshControls();Repaint();
     };
     auto send=[&](int id,UINT message,WPARAM keys,Point screen) {
@@ -2021,7 +2050,7 @@ void SmokeInteraction() {
     check(app.dragging && app.dragWindow==app.views[one].window,L"其他圖形的舊擷取事件不取消目前拖曳");EndDrag(false);
     reset();app.selection={one};app.primary=one;send(one,WM_LBUTTONDOWN,MK_LBUTTON,start);
     send(one,WM_LBUTTONUP,0,start);send(one,WM_LBUTTONDBLCLK,MK_LBUTTON,start);send(one,WM_LBUTTONUP,0,start);
-    check(IsWindowVisible(app.control) && !app.dragging,L"普通雙擊放開後仍可開啟控制視窗");
+    check(desktools::state.editor && !app.dragging,L"普通雙擊放開後可直接編輯筆記");
     reset();group();
     check(SetLayer(app.tiles[0],false),L"桌面層拖曳前可附加 Explorer");
     send(one,WM_LBUTTONDOWN,MK_LBUTTON,start);send(one,WM_MOUSEMOVE,MK_LBUTTON,start+delta);send(one,WM_LBUTTONUP,0,start+delta);
@@ -2291,10 +2320,166 @@ void SmokeSageLayout() {
     AtomicOutput(app.directory/L"sage-results.txt",[&](std::ostream& out){out<<"PASS checks="<<app.smokeChecks<<'\n';});
 }
 
+void CALLBACK RestoreRecycleDialog(HWND owner,UINT,UINT_PTR timer,DWORD) {
+    HWND dialog=GetLastActivePopup(owner);
+    if(dialog==owner||!GetDlgItem(dialog,100))return;
+    KillTimer(owner,timer);SendMessageW(dialog,WM_COMMAND,IDOK,0);
+}
+void CALLBACK CapturePresetDialog(HWND owner,UINT,UINT_PTR timer,DWORD) {
+    HWND dialog=GetLastActivePopup(owner);
+    if(dialog==owner||!GetDlgItem(dialog,101))return;
+    KillTimer(owner,timer);
+    UpdateWindow(dialog);CaptureWindowPng(dialog,app.directory/L"presets-preview.png");
+    SendMessageW(dialog,WM_COMMAND,IDCANCEL,0);
+}
+void SmokeConvenience() {
+    using namespace desktools;
+    Status(L"[便利功能 1/6] 直接編輯、復原與回收");
+    const auto source=CurrentCatalog();
+    app.selection={app.tiles[0].id};app.primary=app.tiles[0].id;
+    BeginInline(app.primary);
+    SmokeCheck(state.editor&&IsWindowVisible(state.editor),L"直接編輯視窗可開啟");
+    SetWindowTextW(state.editor,L"直接編輯 Editable note");
+    FinishInline(true);
+    SmokeCheck(app.tiles[0].text==Utf8(L"直接編輯 Editable note"),L"筆記可直接儲存");
+    Travel(true);
+    SmokeCheck(app.tiles[0].text==source.current().tiles[0].text,L"Ctrl+Z 路徑還原筆記");
+    Travel(false);
+    SmokeCheck(app.tiles[0].text==Utf8(L"直接編輯 Editable note"),L"Ctrl+Y 路徑重做筆記");
+    const auto before=app.tiles.size();app.selection={app.tiles[0].id};app.primary=app.tiles[0].id;
+    Command(IdDelete);
+    SmokeCheck(app.tiles.size()==before-1&&!state.trash.empty()&&fs::exists(app.directory/L"recycle.json"),L"刪除保留持久回收記錄");
+    Travel(true);
+    SmokeCheck(app.tiles.size()==before,L"復原可找回被刪磁磚");
+    SetTimer(app.control,775,25,RestoreRecycleDialog);Command(Trash);KillTimer(app.control,775);
+    SmokeCheck(app.tiles.size()==before+1&&state.trash.empty(),L"回收桶清單可還原磁磚並移除回收項目");
+
+    Status(L"[便利功能 2/6] 拖放與剪貼簿");
+    const auto image=SagePhotoPath();
+    std::wstring file=image.wstring();file.push_back(0);file.push_back(0);
+    HGLOBAL drop=GlobalAlloc(GHND,sizeof(DROPFILES)+file.size()*sizeof(wchar_t));
+    auto* header=static_cast<DROPFILES*>(GlobalLock(drop));header->pFiles=sizeof(DROPFILES);header->fWide=TRUE;
+    memcpy(reinterpret_cast<BYTE*>(header)+sizeof(DROPFILES),file.data(),file.size()*sizeof(wchar_t));GlobalUnlock(drop);
+    SendMessageW(app.control,WM_DROPFILES,reinterpret_cast<WPARAM>(drop),0);
+    SmokeCheck(app.tiles.size()==before+2&&fs::u8path(app.tiles.back().image).parent_path()==app.directory/L"assets",
+        L"拖放照片會新增並複製到管理目錄");
+
+    struct ClipboardRestore {
+        IDataObject* original=nullptr;
+        ClipboardRestore(){OleInitialize(nullptr);OleGetClipboard(&original);}
+        ~ClipboardRestore(){if(original){OleSetClipboard(original);OleFlushClipboard();original->Release();}OleUninitialize();}
+    } clipboard;
+    if(!OpenClipboard(app.control))throw std::runtime_error("Test clipboard is busy.");
+    EmptyClipboard();
+    const std::wstring pasted=L"貼上 Unicode note";
+    HGLOBAL text=GlobalAlloc(GMEM_MOVEABLE,(pasted.size()+1)*sizeof(wchar_t));
+    auto* data=GlobalLock(text);memcpy(data,pasted.c_str(),(pasted.size()+1)*sizeof(wchar_t));GlobalUnlock(text);
+    SetClipboardData(CF_UNICODETEXT,text);CloseClipboard();
+    Paste();
+    SmokeCheck(app.tiles.back().text==Utf8(pasted),L"剪貼簿文字可新增磁磚");
+
+    if(!OpenClipboard(app.control))throw std::runtime_error("Test clipboard is busy.");
+    EmptyClipboard();
+    HGLOBAL dib=GlobalAlloc(GHND,sizeof(BITMAPINFOHEADER)+64);
+    auto* bitmapHeader=static_cast<BITMAPINFOHEADER*>(GlobalLock(dib));
+    bitmapHeader->biSize=sizeof(BITMAPINFOHEADER);bitmapHeader->biWidth=4;bitmapHeader->biHeight=4;
+    bitmapHeader->biPlanes=1;bitmapHeader->biBitCount=32;bitmapHeader->biCompression=BI_RGB;
+    auto* pixels=reinterpret_cast<DWORD*>(reinterpret_cast<BYTE*>(bitmapHeader)+sizeof(BITMAPINFOHEADER));
+    for(int i=0;i<16;++i)pixels[i]=0x00DD4422;
+    GlobalUnlock(dib);SetClipboardData(CF_DIB,dib);CloseClipboard();
+    Paste();
+    SmokeCheck(app.tiles.back().kind==Kind::Image&&fs::exists(fs::u8path(app.tiles.back().image)),
+        L"剪貼簿截圖可建立持久圖片磁磚");
+
+    Status(L"[便利功能 3/6] 位置鎖定、穿透與快捷鍵");
+    app.selection={app.tiles.front().id};app.primary=app.tiles.front().id;
+    Command(Lock);const auto position=app.tiles.front().position;
+    BeginDrag(app.primary,position,false);DragTo(position+Point{50,50});EndDrag(true);
+    SmokeCheck(app.tiles.front().position.x==position.x&&Locked(app.primary),L"位置鎖定可阻止誤拖");
+    Command(Through);
+    SmokeCheck((GetWindowLongPtrW(app.views[app.primary].window,GWL_EXSTYLE)&WS_EX_TRANSPARENT)!=0,L"穿透更新實際視窗");
+    POINT hit{LONG(app.tiles.front().position.x+80),LONG(app.tiles.front().position.y+70)};
+    const auto hitWindow=WindowFromPoint(hit);
+    SmokeCheck(hitWindow!=app.views[app.primary].window&&GetAncestor(hitWindow,GA_ROOT)!=app.views[app.primary].window,
+        L"穿透磁磚不攔截實際滑鼠命中");
+    const auto inputLayout=app.catalog.active;
+    auto alternate=CurrentCatalog();NewProfile(alternate,"Input scope",Preset(0));ApplyCatalog(std::move(alternate));
+    SmokeCheck(!ThroughTile(app.tiles.front().id)&&
+        !(GetWindowLongPtrW(app.views[app.tiles.front().id].window,GWL_EXSTYLE)&WS_EX_TRANSPARENT),
+        L"切換新配置不沿用其他配置的穿透");
+    auto back=CurrentCatalog();back.active=inputLayout;ApplyCatalog(std::move(back));
+    app.primary=app.tiles.front().id;app.selection={app.primary};
+    SmokeCheck(ThroughTile(app.primary)&&
+        (GetWindowLongPtrW(app.views[app.primary].window,GWL_EXSTYLE)&WS_EX_TRANSPARENT),
+        L"切回原配置恢復已儲存的穿透");
+    Command(RecoverInput);
+    SmokeCheck(!Locked(app.primary)&&!ThroughTile(app.primary),L"系統匣可恢復輸入");
+    const auto keys=state.preferences["hotkeys"];
+    for(int i=0;i<5;++i)state.preferences["hotkeys"][i]=unsigned(0x0600+VK_F20+i);
+    RegisterKeys();const auto count=app.tiles.size();
+    SendMessageW(app.control,WM_HOTKEY,4501,0);
+    SmokeCheck(app.tiles.size()==count+1&&app.tiles.back().kind==Kind::Timer,L"全域快捷鍵訊息新增倒數");
+    for(int i=0;i<5;++i)UnregisterHotKey(app.control,4500+i);
+    state.preferences["hotkeys"]=keys;
+
+    Status(L"[便利功能 4/6] 專注模式與螢幕重整");
+    state.preferences["manualFocus"]=true;FocusTick();
+    SmokeCheck(Hidden()&&!IsWindowVisible(app.views.begin()->second.window)&&!app.animationTimer,L"專注模式隱藏磁磚並停用動畫");
+    auto* timer=&app.tiles.back();timer->running=true;const auto elapsed=timer->elapsed;Advance(*timer,2);
+    SmokeCheck(timer->elapsed==elapsed+2,L"隱藏時倒數可持續運作");
+    state.preferences["manualFocus"]=false;FocusTick();
+    auto offscreen=CurrentCatalog();offscreen.current().tiles.front().position={-50000,-50000};Commit(std::move(offscreen));
+    state.monitorKey="test-removed-monitor";MonitorChanged();
+    RECT bounds{LONG(app.tiles.front().position.x),LONG(app.tiles.front().position.y),
+        LONG(app.tiles.front().position.x+app.tiles.front().size),LONG(app.tiles.front().position.y+TileHeight(app.tiles.front()))};
+    SmokeCheck(MonitorFromRect(&bounds,MONITOR_DEFAULTTONULL)!=nullptr,L"已拔除螢幕的磁磚回到可見範圍");
+
+    Status(L"[便利功能 5/6] 樣板與分享");
+    SetTimer(app.control,774,25,CapturePresetDialog);
+    ShowTemplates();KillTimer(app.control,774);
+    SmokeCheck(fs::exists(app.directory/L"presets-preview.png"),L"樣板庫可顯示縮圖預覽");
+    const auto oldCount=app.catalog.profiles.size();
+    ApplyPreset(2,false);
+    SmokeCheck(app.catalog.profiles.size()==oldCount+1&&app.tiles.size()==3,L"樣板可建立新配置");
+    app.selection={app.tiles.front().id};app.primary=app.tiles.front().id;
+    const auto note=app.tiles.front().text;ApplyPreset(1,true);
+    SmokeCheck(app.tiles.front().text==note&&app.tiles.front().backgroundColor==0xACC397,L"配色套用保留內容");
+    app.tiles.front().text="private@example.com";SaveState();
+    const auto shared=CreateShare(app.directory/L"shared-layout.json",false,false);
+    std::ifstream shareIn(shared,std::ios::binary);const auto share=ParseBundle(shareIn);
+    SmokeCheck(share.tiles.front().text=="Your note"&&share.images.empty(),L"分享預設排除私人內容");
+    SharePreview(share,app.directory/L"share-preview.png");
+    ImportPackage(shared);
+    SmokeCheck(app.tiles.front().text=="Your note"&&app.tiles.back().kind==Kind::Timer,L"分享包可匯入獨立配置");
+
+    Status(L"[便利功能 6/6] 離線同步與資料重讀");
+    state.preferences["syncFolder"]=(app.directory/L"offline-cloud").u8string();Synchronize();
+    const auto remote=app.directory/L"offline-cloud"/L"desktiles-sync.json";
+    SmokeCheck(fs::exists(remote)&&!state.preferences.value("syncBase",std::string{}).empty(),L"離線 transport 可上傳");
+    SetFlag("through",app.tiles.front().id,true);RefreshDesktop();
+    auto package=Json::parse(ReadBytes(remote,64*1024*1024));
+    package["profiles"].back()["bundle"]["tiles"][0]["text"]="Remote edit";
+    AtomicOutput(remote,[&](std::ostream& out){out<<package;});
+    Synchronize();
+    SmokeCheck(app.tiles.front().text=="Remote edit",L"只有遠端修改時可下載");
+    SmokeCheck(!ThroughTile(app.tiles.front().id)&&
+        !(GetWindowLongPtrW(app.views[app.tiles.front().id].window,GWL_EXSTYLE)&WS_EX_LAYERED)&&
+        IsWindowVisible(app.views[app.tiles.front().id].visual),L"同步下載清除舊穿透並恢復互動畫面");
+    const auto saved=EditKey(CurrentCatalog());
+    AtomicOutput(remote,[](std::ostream& out){out<<"{broken";});
+    bool rejected=false;try{Synchronize();}catch(const std::exception&){rejected=true;}
+    SmokeCheck(rejected&&saved==EditKey(CurrentCatalog()),L"遠端損毀不覆寫本機配置");
+    std::ifstream stored(CatalogPath(),std::ios::binary);const auto reloaded=ReadCatalog(stored);
+    SmokeCheck(EditKey(reloaded)==saved,L"新功能配置可由正常入口重新讀取");
+    SmokeCheck(!steam.Available()&&steam.InstalledItems().empty(),L"無 SDK 版本如實顯示 Steam 未連線");
+    AtomicOutput(app.directory/L"convenience-results.txt",[](std::ostream& out){out<<"PASS checks="<<app.smokeChecks<<'\n';});
+}
+
 void SmokeTick() {
     try {
         if(app.smokeStep==0) {
             KillTimer(app.control,2);
+            if(app.convenienceOnly){SmokeConvenience();app.smokeDone=true;Command(IdExit);return;}
             if(app.sageOnly){SmokeSageLayout();app.smokeDone=true;Command(IdExit);return;}
             if(app.bevelOnly){
                 Status(L"[磁磚驗證 1/3] 檢查新格預設");
@@ -2602,6 +2787,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         else if(std::wstring(argv[i])==L"--layouts-menu-test"){app.smoke=true;app.trayLayoutOnly=true;}
         else if(std::wstring(argv[i])==L"--bevel-test"){app.smoke=true;app.bevelOnly=true;}
         else if(std::wstring(argv[i])==L"--sage-test"){app.smoke=true;app.sageOnly=true;}
+        else if(std::wstring(argv[i])==L"--convenience-test"){app.smoke=true;app.convenienceOnly=true;}
         else if(std::wstring(argv[i])==L"--demo-capture")app.demoCapture=true;
     }
     LocalFree(argv);
@@ -2687,11 +2873,13 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         Progress(4,Tr(L"準備系統匣與操作選單"));
         app.taskbarCreated=RegisterWindowMessageW(L"TaskbarCreated");AddTray();
         RefreshControls();Repaint();SaveState();UpdateAnimation();UpdateClock();app.cliReady=!app.smoke;
+        desktools::Start();
         Progress(5,Tr(L"完成，等待操作"));DestroyWindow(app.progress);app.progress=nullptr;
         if(!app.startupLaunch)ShowControl();
         if(app.smoke) SetTimer(app.control,2,350,nullptr);
         MSG message{};
         while(GetMessageW(&message,nullptr,0,0)>0) {
+            if(desktools::Accelerator(message))continue;
             if(app.alarmControl&&IsWindowVisible(app.alarmControl)&&(message.hwnd==app.alarmControl||IsChild(app.alarmControl,message.hwnd))) {
                 if(message.message==WM_KEYDOWN&&message.wParam==VK_ESCAPE){ShowWindow(app.alarmControl,SW_HIDE);continue;}
                 if(IsDialogMessageW(app.alarmControl,&message))continue;
@@ -2722,6 +2910,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR,int) {
         auto error=LocalizeError(Wide(e.what()));Log(L"ERROR: "+error);
         if(!app.smoke)MessageBoxW(nullptr,(error+Tr(L"\n\n資料位置：")+app.statePath.wstring()).c_str(),Tr(L"DeskTiles 啟動失敗"),MB_OK|MB_ICONERROR);
     }
+    desktools::Stop();
     if(app.progress) DestroyWindow(app.progress);
     Shell_NotifyIconW(NIM_DELETE,&app.tray);
     for(auto& view:app.views) {if(IsWindow(view.second.window))DestroyWindow(view.second.window);view.second.image.reset();}

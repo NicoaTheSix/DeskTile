@@ -1,10 +1,25 @@
-﻿param([switch]$Integration, [ValidateSet('HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe')][string]$OutputName = 'DeskTiles.exe')
+﻿param([switch]$Integration, [ValidateSet('HexDesk.exe','HexDesk-update.exe','HexDesk-next.exe','DeskTiles.exe','DeskTiles-update.exe')][string]$OutputName = 'DeskTiles.exe', [string]$SteamSdkPath = '')
 $ErrorActionPreference = 'Stop'
 $sourceRoot = [IO.Path]::GetFullPath($PSScriptRoot)
 $outputRoot = Join-Path $sourceRoot 'build'
 $executablePath = Join-Path $outputRoot $OutputName
 Write-Host "輸入目錄（絕對路徑）：$sourceRoot"
 Write-Host "輸入檔案：$(Join-Path $sourceRoot 'win32.cpp')"
+Write-Host "便利功能輸入：$(Join-Path $sourceRoot 'win32_convenience.hpp')"
+Write-Host "Steam 整合輸入：$(Join-Path $sourceRoot 'steam_service.hpp')"
+$steamArguments=@()
+$steamLink=@()
+if($SteamSdkPath){
+    $SteamSdkPath=[IO.Path]::GetFullPath($SteamSdkPath)
+    $apiHeader=Join-Path $SteamSdkPath 'public\steam\steam_api.h'
+    $apiLib=Join-Path $SteamSdkPath 'redistributable_bin\win64\steam_api64.lib'
+    $apiDll=Join-Path $SteamSdkPath 'redistributable_bin\win64\steam_api64.dll'
+    Write-Host "Steam SDK 輸入：$SteamSdkPath"
+    Write-Host "Steam DLL 輸出：$(Join-Path $outputRoot 'steam_api64.dll')"
+    foreach($path in @($apiHeader,$apiLib,$apiDll)){if(!(Test-Path -LiteralPath $path)){throw "Missing SDK file: $path"}}
+    $steamArguments=@('/DDESKTILES_STEAM_SDK',('/I'+(Join-Path $SteamSdkPath 'public')))
+    $steamLink=@($apiLib)
+}
 Write-Host "核心輸入：$(Join-Path $sourceRoot 'core.hpp')"
 Write-Host "配置輸入：$(Join-Path $sourceRoot 'config.hpp')"
 Write-Host "JSON 相依檔案：$(Join-Path $sourceRoot 'third_party\nlohmann\json.hpp')"
@@ -46,8 +61,11 @@ try {
     & (Join-Path $sourceRoot 'assets\build-logo.ps1')
     & rc.exe /nologo ('/i' + $sourceRoot) /foDeskTiles.res (Join-Path $sourceRoot 'DeskTiles.rc')
     if ($LASTEXITCODE -ne 0) { throw '圖示資源編譯失敗。' }
-    & cl.exe /nologo /std:c++17 /utf-8 /EHsc /W4 /external:anglebrackets /external:W0 /O2 /MT (Join-Path $sourceRoot 'win32.cpp') DeskTiles.res ('/Fe:' + $OutputName) /Fo:DeskTiles.obj /link /SUBSYSTEM:WINDOWS /DYNAMICBASE /NXCOMPAT /MANIFEST:EMBED (('/MANIFESTINPUT:') + (Join-Path $sourceRoot 'HexDesk.manifest'))
+    & cl.exe /nologo /std:c++17 /utf-8 /EHsc /W4 /external:anglebrackets /external:W0 /O2 /MT @steamArguments (Join-Path $sourceRoot 'win32.cpp') DeskTiles.res ('/Fe:' + $OutputName) /Fo:DeskTiles.obj /link @steamLink /SUBSYSTEM:WINDOWS /DYNAMICBASE /NXCOMPAT /MANIFEST:EMBED (('/MANIFESTINPUT:') + (Join-Path $sourceRoot 'HexDesk.manifest'))
     if ($LASTEXITCODE -ne 0) { throw '應用程式編譯失敗。' }
+    if($SteamSdkPath){Copy-Item -LiteralPath $apiDll -Destination $outputRoot}
+    $features=@{steam=[bool]$SteamSdkPath}
+    $features | ConvertTo-Json | Set-Content -LiteralPath ($executablePath+'.features.json') -Encoding UTF8
     Write-Host '[3/5] 編譯 CMD／PowerShell 命令列工具'
     Write-Progress -Activity '建置 DeskTiles' -Status '編譯命令列工具' -PercentComplete 45
     & cl.exe /nologo /std:c++17 /utf-8 /EHsc /W4 /external:anglebrackets /external:W0 /O2 /MT (Join-Path $sourceRoot 'desktiles_cli.cpp') /Fe:desktiles-cli.exe /Fo:DeskTilesCli.obj /link /SUBSYSTEM:CONSOLE /DYNAMICBASE /NXCOMPAT
@@ -58,6 +76,11 @@ try {
     if ($LASTEXITCODE -ne 0) { throw '核心測試編譯失敗。' }
     & .\CoreTests.exe (Join-Path $sourceRoot 'core.hpp') | Tee-Object -FilePath (Join-Path $outputRoot 'core-test-results.txt')
     if ($LASTEXITCODE -ne 0) { throw '核心測試未通過。' }
+    Write-Host '[便利核心] 編譯並驗證復原、分享與同步'
+    & cl.exe /nologo /std:c++17 /utf-8 /EHsc /W4 /O2 /MT (Join-Path $sourceRoot 'convenience_tests.cpp') /Fe:ConvenienceTests.exe /Fo:ConvenienceTests.obj
+    if($LASTEXITCODE -ne 0){throw '便利功能核心測試編譯失敗。'}
+    & .\ConvenienceTests.exe | Tee-Object -FilePath (Join-Path $outputRoot 'convenience-core-results.txt')
+    if($LASTEXITCODE -ne 0){throw '便利功能核心測試失敗。'}
     Write-Host '[5/5] 驗證輸出'
     Write-Progress -Activity '建置 DeskTiles' -Status '驗證輸出' -PercentComplete 85
     if ($Integration) {

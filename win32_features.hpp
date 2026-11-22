@@ -158,7 +158,7 @@ void RefreshReminder() {
     SetWindowTextW(GetDlgItem(app.reminder,IdDismiss),Tr(L"知道了"));
 }
 void NotifyTile(const Tile& tile,bool alarm,bool preview,const std::wstring& profile) {
-    if(app.smoke&&!preview)return;
+    if((app.smoke&&!preview)||desktools::Muted())return;
     if(!app.reminder) {
         WNDCLASSW klass{};klass.hInstance=app.instance;klass.lpszClassName=ReminderClass;klass.lpfnWndProc=ReminderProc;
         klass.hCursor=LoadCursor(nullptr,IDC_ARROW);klass.hIcon=app.icon;RegisterClassW(&klass);
