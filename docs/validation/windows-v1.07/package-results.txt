@@ -1,0 +1,3 @@
+﻿PASS: ZIP extracted with all required files
+PASS: packaged EXE SHA256 matches release executable
+PASS: unpacked EXE completed Windows integration

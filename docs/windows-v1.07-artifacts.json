@@ -1,0 +1,430 @@
+{
+  "artifacts": [
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\DeskTiles.rc"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "DeskTiles.rc",
+      "path": "D:\\DeskTile\\DeskTiles.rc",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\README.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "README.md",
+      "path": "D:\\DeskTile\\README.md",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\README.zh-TW.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "README.zh-TW.md",
+      "path": "D:\\DeskTile\\README.zh-TW.md",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\VERSION"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "VERSION",
+      "path": "D:\\DeskTile\\VERSION",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\build.ps1"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "build.ps1",
+      "path": "D:\\DeskTile\\build.ps1",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\convenience.hpp"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "convenience.hpp",
+      "path": "D:\\DeskTile\\convenience.hpp",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\convenience_tests.cpp"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "convenience_tests.cpp",
+      "path": "D:\\DeskTile\\convenience_tests.cpp",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\UserGuide.en.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "UserGuide.en.md",
+      "path": "D:\\DeskTile\\docs\\UserGuide.en.md",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\desktop-tools-presets.png"
+      ],
+      "size_bytes": 15494,
+      "kind": "image",
+      "sha256": "94cccd275d381a9b4dbdff0eff1e3ac0d1b1325703303bc55a254ef69e05f8dd",
+      "name": "desktop-tools-presets.png",
+      "path": "D:\\DeskTile\\docs\\desktop-tools-presets.png",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\portfolio-v1.07-handoff.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "portfolio-v1.07-handoff.md",
+      "path": "D:\\DeskTile\\docs\\portfolio-v1.07-handoff.md",
+      "purpose": "Portfolio 網站更新交接"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\composition-desktop.json"
+      ],
+      "size_bytes": null,
+      "kind": "manifest",
+      "sha256": null,
+      "name": "composition-desktop.json",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\composition-desktop.json",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\composition-top.json"
+      ],
+      "size_bytes": null,
+      "kind": "manifest",
+      "sha256": null,
+      "name": "composition-top.json",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\composition-top.json",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\convenience-core-results.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "convenience-core-results.txt",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\convenience-core-results.txt",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\convenience-results.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "convenience-results.txt",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\convenience-results.txt",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\core-results.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "core-results.txt",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\core-results.txt",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\icon-results.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "icon-results.txt",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\icon-results.txt",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\package-results.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "package-results.txt",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\package-results.txt",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\validation\\windows-v1.07\\windows-integration-results.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "windows-integration-results.txt",
+      "path": "D:\\DeskTile\\docs\\validation\\windows-v1.07\\windows-integration-results.txt",
+      "purpose": "正式 EXE 驗證證據"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\windows-v1.07-deployment.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "windows-v1.07-deployment.md",
+      "path": "D:\\DeskTile\\docs\\windows-v1.07-deployment.md",
+      "purpose": "建置與部署流程"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\docs\\使用說明.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "使用說明.md",
+      "path": "D:\\DeskTile\\docs\\使用說明.md",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\package.ps1"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "package.ps1",
+      "path": "D:\\DeskTile\\package.ps1",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\release\\DeskTiles-Windows-x64.zip"
+      ],
+      "size_bytes": 1004683,
+      "kind": "archive",
+      "sha256": "bd515eb5e036a2f9ea9f9c5e1aede00c391297488bbe9cabb02795f8e860733e",
+      "name": "DeskTiles-Windows-x64.zip",
+      "path": "D:\\DeskTile\\release\\DeskTiles-Windows-x64.zip",
+      "purpose": "Windows v1.07 下載與使用說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\release\\DeskTiles\\DeskTiles.exe"
+      ],
+      "size_bytes": 1587712,
+      "kind": "executable",
+      "sha256": "89fa0598f6681438cc3e259f5a1e72fdd26787cd00dd7fce13594ec7e4ec49a4",
+      "name": "DeskTiles.exe",
+      "path": "D:\\DeskTile\\release\\DeskTiles\\DeskTiles.exe",
+      "purpose": "Windows v1.07 下載與使用說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\release\\DeskTiles\\README.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "README.txt",
+      "path": "D:\\DeskTile\\release\\DeskTiles\\README.txt",
+      "purpose": "Windows v1.07 下載與使用說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\release\\DeskTiles\\UserGuide.en.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "UserGuide.en.md",
+      "path": "D:\\DeskTile\\release\\DeskTiles\\UserGuide.en.md",
+      "purpose": "Windows v1.07 下載與使用說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\release\\DeskTiles\\desktiles-cli.exe"
+      ],
+      "size_bytes": 322048,
+      "kind": "executable",
+      "sha256": "811cbc2cb306b21b58e99de487d81a77fe5acba5f70083c72447ab63c5c9245a",
+      "name": "desktiles-cli.exe",
+      "path": "D:\\DeskTile\\release\\DeskTiles\\desktiles-cli.exe",
+      "purpose": "Windows v1.07 下載與使用說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\release\\DeskTiles\\使用說明.md"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "使用說明.md",
+      "path": "D:\\DeskTile\\release\\DeskTiles\\使用說明.md",
+      "purpose": "Windows v1.07 下載與使用說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\release\\SHA256SUMS.txt"
+      ],
+      "size_bytes": null,
+      "kind": "document",
+      "sha256": null,
+      "name": "SHA256SUMS.txt",
+      "path": "D:\\DeskTile\\release\\SHA256SUMS.txt",
+      "purpose": "Windows v1.07 下載與使用說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\steam_service.hpp"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "steam_service.hpp",
+      "path": "D:\\DeskTile\\steam_service.hpp",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\verify-convenience.ps1"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "verify-convenience.ps1",
+      "path": "D:\\DeskTile\\verify-convenience.ps1",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\win32.cpp"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "win32.cpp",
+      "path": "D:\\DeskTile\\win32.cpp",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\win32_convenience.hpp"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "win32_convenience.hpp",
+      "path": "D:\\DeskTile\\win32_convenience.hpp",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\win32_features.hpp"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "win32_features.hpp",
+      "path": "D:\\DeskTile\\win32_features.hpp",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "modified",
+      "source_paths": [
+        "D:\\DeskTile\\build\\convenience-v1.07\\win32_layouts.hpp"
+      ],
+      "size_bytes": null,
+      "kind": "source_code",
+      "sha256": null,
+      "name": "win32_layouts.hpp",
+      "path": "D:\\DeskTile\\win32_layouts.hpp",
+      "purpose": "已驗收便利功能、版本或雙語說明"
+    },
+    {
+      "action": "created",
+      "source_paths": [],
+      "size_bytes": null,
+      "kind": "manifest",
+      "sha256": null,
+      "name": "windows-v1.07-artifacts.json",
+      "path": "D:\\DeskTile\\docs\\windows-v1.07-artifacts.json",
+      "purpose": "本批逐檔交付清單"
+    }
+  ],
+  "version_after": "v1.07",
+  "version_before": "v1.06",
+  "instruction_id": "1508ed7618764c13",
+  "batch_id": "desktiles-convenience-20261122",
+  "confirmation_id": "58d56921674d47649ffcbbc7223dc595",
+  "schema_version": 1,
+  "git_ref": "refs/tags/v1.07",
+  "accepted_snapshot": "c4717b7374c55df4d8eb8e91d0fedebd52103a18"
+}

@@ -1,0 +1,1 @@
+﻿PASS: all 9 ICO sizes decode, preserve transparent corners and smoothing; packaged EXE resources match every frame and Windows loads every size.

@@ -1,0 +1,12 @@
+PASS checks=192
+idle_sample_seconds=5
+idle_cpu_one_core_percent=0
+working_set_mib=30.0508
+private_mib=10.0508
+handles=266
+gdi_objects=74
+idle_tile_paints=0
+rgb_sample_seconds=10
+rgb_cpu_one_core_percent=3.90625
+rgb_timer_frames=108
+rgb_tile_paints=216

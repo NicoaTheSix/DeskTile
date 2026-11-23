@@ -2,7 +2,7 @@
 
 [English](README.md) · **繁體中文**
 
-**下載：** [Windows v1.06 免安裝 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.06/release/DeskTiles-Windows-x64.zip) · [僅下載 DeskTiles.exe](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.06/release/DeskTiles/DeskTiles.exe) · [macOS v1.02 Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip)
+**下載：** [Windows v1.07 免安裝 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.07/release/DeskTiles-Windows-x64.zip) · [僅下載 DeskTiles.exe](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.07/release/DeskTiles/DeskTiles.exe) · [macOS v1.02 Universal 2 ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.02/DeskTile_mac/release/DeskTiles-macOS-universal.zip)
 
 Windows ZIP 同時包含命令列工具與使用說明。
 
@@ -223,8 +223,8 @@ Mac build.sh 先列出絕對路徑並執行核心檢查，建立標準／Retina 
 
 GitHub 的 macOS verified package 工作流程在圖示更新分支建置與驗證，再將通過的 ZIP、ICNS 與 SHA256 提交回相同分支；下載版只有在驗證通過後才整合至 main。workflow_dispatch 亦可手動重建。App 仍未申請 Apple 公證，Intel 硬體、多螢幕與各版本 macOS 的實機驗收限制沿用原版。
 
-Windows v1.06 已驗證重啟後的背景鬧鐘；程式關閉期間錯過的提醒不會補播。圖示更新不更動使用者版面或自動啟動設定。
-Windows 正式版為 v1.06，包含多套桌面配置與 CMD／PowerShell 命令列。macOS 維持 v1.02。兩平台的 Logo 皆沿用深灰細圈與透明外角。Windows PowerShell 腳本使用 UTF-8 BOM 以支援內建 5.1。
+Windows v1.07 已驗證重啟後的背景鬧鐘；程式關閉期間錯過的提醒不會補播。圖示更新不更動使用者版面或自動啟動設定。
+Windows 正式版為 v1.07，包含多套桌面配置與 CMD／PowerShell 命令列。macOS 維持 v1.02。兩平台的 Logo 皆沿用深灰細圈與透明外角。Windows PowerShell 腳本使用 UTF-8 BOM 以支援內建 5.1。
 
 圖示回歸：powershell -NoProfile -ExecutionPolicy Bypass -File verify-icons.ps1 -ExecutablePath <EXE絕對路徑>。腳本先列出圖示、EXE與結果絕對位置，逐尺寸檢查九個ICO的解碼、透明角落及平滑邊緣，再比對打包EXE內嵌圖示的每一個位元組並實際呼叫Windows圖示載入；結果存於build/icon-verification.txt。
 
@@ -282,7 +282,9 @@ desktiles-cli.exe tile delete --id 1
 
 建置後執行 `./verify-sage.ps1`，會先列出絕對路徑，再用獨立資料目錄驗證樣板、編輯、儲存與切換計時。
 
-## 桌面工具預覽（Windows）
+## 桌面工具（Windows）
+
+[Windows v1.07 部署紀錄](docs/windows-v1.07-deployment.md)記錄建置、驗證及發布流程；[Portfolio 交接文件](docs/portfolio-v1.07-handoff.md)列出新版下載檔、中英文說明和校驗值。
 
 磁磚與系統匣右鍵都有「桌面工具」選單。雙擊文字磁磚可直接編輯，點外面或 Ctrl+Enter 儲存，Esc 取消。在文字欄位之外按 Ctrl+Z／Ctrl+Y 可復原、重做版面。復原會保留仍存在的計時器進度，找回已刪除的計時器或鬧鐘時先停用。每次執行最多保留 30 次復原，復原與重做各限制 8 MiB，回收桶持久保存最多 100 格。
 
@@ -296,7 +298,7 @@ desktiles-cli.exe tile delete --id 1
 
 ### Steam 與離線測試
 
-目前尚無 Steamworks App ID／SDK，這份預覽使用離線建置。「立即同步…」可設定完整路徑的共用資料夾，驗證上傳、下載和衝突選擇。既有遠端內容與本機不同時會要求選擇，覆寫前先將兩份內容保存到 sync-backups。同步帶入的計時與鬧鐘先保持停用。
+目前尚無 Steamworks App ID／SDK，Windows v1.07 使用離線建置。「立即同步…」可設定完整路徑的共用資料夾，驗證上傳、下載和衝突選擇。既有遠端內容與本機不同時會要求選擇，覆寫前先將兩份內容保存到 sync-backups。同步帶入的計時與鬧鐘先保持停用。
 
 SDK 版的「Steam 連線與訂閱樣板…」可設定啟動、結束及每五分鐘同步，並匯入已下載的訂閱項目。「發布至工作坊（先預覽）…」上傳經確認的分享包和渲染圖，初始可見性為私人。瀏覽工作坊會開啟本產品的 Steam 頁面，讓使用者訂閱。
 

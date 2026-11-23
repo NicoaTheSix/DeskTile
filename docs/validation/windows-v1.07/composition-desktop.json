@@ -1,0 +1,293 @@
+[
+  [
+    true,
+    "normal-start-desktop visible background 1",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "normal-start-desktop visible red border 1",
+    3344
+  ],
+  [
+    true,
+    "normal-start-desktop visible background 2",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "normal-start-desktop visible red border 2",
+    3472
+  ],
+  [
+    true,
+    "normal-start-top visible background 1",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "normal-start-top visible red border 1",
+    3344
+  ],
+  [
+    true,
+    "normal-start-top visible background 2",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "normal-start-top visible red border 2",
+    3472
+  ],
+  [
+    true,
+    "topmost style 1",
+    {
+      "hwnd": 663078,
+      "parent": null,
+      "owner": null,
+      "style": "0x94000000",
+      "exstyle": "0x98",
+      "rect": [
+        80,
+        1860,
+        300,
+        2051
+      ]
+    }
+  ],
+  [
+    true,
+    "topmost style 2",
+    {
+      "hwnd": 2235644,
+      "parent": null,
+      "owner": null,
+      "style": "0x94000000",
+      "exstyle": "0x98",
+      "rect": [
+        340,
+        1860,
+        560,
+        2007
+      ]
+    }
+  ],
+  [
+    true,
+    "desktop-owned composited popup 1",
+    {
+      "hwnd": 663078,
+      "parent": 66258,
+      "owner": 66258,
+      "style": "0x94000000",
+      "exstyle": "0x90",
+      "rect": [
+        80,
+        1860,
+        300,
+        2051
+      ]
+    }
+  ],
+  [
+    true,
+    "desktop-owned composited popup 2",
+    {
+      "hwnd": 2235644,
+      "parent": 66258,
+      "owner": 66258,
+      "style": "0x94000000",
+      "exstyle": "0x90",
+      "rect": [
+        340,
+        1860,
+        560,
+        2007
+      ]
+    }
+  ],
+  [
+    true,
+    "desktop stays below ordinary window",
+    [
+      255,
+      255,
+      255
+    ]
+  ],
+  [
+    true,
+    "ordinary foreground window receives desktop-layer input",
+    ""
+  ],
+  [
+    true,
+    "switched-desktop visible background 1",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "switched-desktop visible red border 1",
+    3344
+  ],
+  [
+    true,
+    "switched-desktop visible background 2",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "switched-desktop visible red border 2",
+    3472
+  ],
+  [
+    true,
+    "desktop-to-top visible background 1",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "desktop-to-top visible red border 1",
+    3344
+  ],
+  [
+    true,
+    "desktop-to-top visible background 2",
+    [
+      34,
+      239,
+      96
+    ]
+  ],
+  [
+    true,
+    "desktop-to-top visible red border 2",
+    3472
+  ],
+  [
+    true,
+    "returned to real topmost 1",
+    {
+      "hwnd": 663078,
+      "parent": null,
+      "owner": null,
+      "style": "0x94000000",
+      "exstyle": "0x98",
+      "rect": [
+        80,
+        1860,
+        300,
+        2051
+      ]
+    }
+  ],
+  [
+    true,
+    "returned to real topmost 2",
+    {
+      "hwnd": 2235644,
+      "parent": null,
+      "owner": null,
+      "style": "0x94000000",
+      "exstyle": "0x98",
+      "rect": [
+        340,
+        1860,
+        560,
+        2007
+      ]
+    }
+  ],
+  [
+    true,
+    "fully transparent actual background 1",
+    [
+      255,
+      255,
+      255
+    ]
+  ],
+  [
+    true,
+    "transparent area accepts real mouse input 1",
+    ""
+  ],
+  [
+    true,
+    "transparent background retains border 1",
+    3344
+  ],
+  [
+    true,
+    "fully transparent actual background 2",
+    [
+      255,
+      255,
+      255
+    ]
+  ],
+  [
+    true,
+    "transparent area accepts real mouse input 2",
+    ""
+  ],
+  [
+    true,
+    "transparent background retains border 2",
+    3472
+  ],
+  [
+    true,
+    "transparent background retains visible text 1",
+    883
+  ],
+  [
+    true,
+    "transparent background retains visible text 2",
+    727
+  ],
+  [
+    true,
+    "transparent point selects and drags tile",
+    [
+      95,
+      1850,
+      315,
+      2041
+    ]
+  ],
+  [
+    true,
+    "image keeps full color with transparent background",
+    ""
+  ]
+]

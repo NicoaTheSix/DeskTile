@@ -1,5 +1,7 @@
 # DeskTiles — User Guide
 
+Windows v1.07 · [Portable ZIP](https://raw.githubusercontent.com/NicoaTheSix/DeskTile/v1.07/release/DeskTiles-Windows-x64.zip) · [繁體中文](使用說明.md)
+
 DeskTiles is a native Windows desktop widget app. Arrange text, images, timers and alarms in hexagonal, triangular or rectangular tiles. Windows 10/11 x64 is supported; Linux is planned.
 
 ## Start
@@ -122,7 +124,7 @@ Choose **Desktop layouts → Create from Sage preset…** in the tray and name t
 
 Set a custom rectangle height in **Tile size and text style…** with sizing enabled. Leave it blank for 3:2. Use **Hide tile ID and status labels** to toggle the labels for the selection. Export JSON to back up the tiles and photo together. The preset uses the current desktop wallpaper.
 
-## Desktop tools preview (Windows)
+## Desktop tools (Windows)
 
 The **Desktop tools** submenu is available from a tile or the system tray. Double-click a text tile to edit it in place. Click outside or press Ctrl+Enter to save; Esc cancels. Ctrl+Z and Ctrl+Y restore or redo layout edits when focus is outside a text field. Undo retains clocks on surviving tiles; recovered deleted timers and alarms start inactive. The session keeps up to 30 undo steps with an 8 MiB budget per history direction, while the recycle bin persists up to 100 deleted tiles.
 
@@ -133,3 +135,9 @@ Use the submenu to lock the position of the selected tiles or enable click-throu
 **Desktop preferences…** controls automatic fullscreen hiding, optional muted reminders, and manual focus mode. Timers and alarms keep running while tiles are hidden. Display changes remember positions for up to eight monitor arrangements, and bring disconnected-screen tiles back into view. The **Layout presets…** dialog previews Monochrome, Sage, Study and Work. It can create a layout or apply only its colors to selected tiles.
 
 **Export share package (preview)…** creates a JSON layout with embedded pictures when explicitly selected. Text and pictures are excluded by default, and schedules are inactive. A content confirmation precedes export. **Import package as new layout…** validates the package and imports it independently.
+
+### Steam and offline sync
+
+Windows v1.07 uses an offline build. Steam Cloud and Workshop network operations are pending an assigned App ID and SDK. **Sync now…** accepts an absolute shared folder path to test upload, download and conflicts. Conflicting versions require a choice; both are backed up in sync-backups before replacement. Transfers include layouts and owned pictures; downloaded timers and alarms start inactive.
+
+The Steam-enabled adapter still requires SDK compilation and live upload, subscription and cross-machine validation. Offline sync is available now; it does not establish a Steam connection.

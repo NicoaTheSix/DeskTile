@@ -1,0 +1,16 @@
+Input: D:\DeskTile\build\convenience-v1.07\core.hpp
+Output: stdout; no data files modified
+[1/12] Selection
+[2/12] Geometry and group snap
+[3/12] Timers
+[4/12] Persistence and Unicode
+[5/12] Border colors, animation and pixel geometry
+[6/12] Variable geometry, resizing and collision rollback
+[7/12] Invalid input
+[8/12] Background, breathing and portable JSON bundles
+[9/12] Multiple shapes, contact geometry and compatibility
+[10/12] Interface translations and language codes
+[11/12] Alarms, recurrence and persisted text
+[12/12] Startup consent and safe Windows quoting
+[Presentation] Rectangles, photo crop, JSON and native storage
+PASS: 235 checks

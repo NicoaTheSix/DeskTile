@@ -1,0 +1,8 @@
+Input: convenience.hpp, layouts.hpp, in-memory fixtures
+Output: stdout
+[1/5] History and clock preservation
+[2/5] Sharing redaction and embedded images
+[3/5] Sync conflict decisions
+[4/5] Presets and unique layout names
+[5/5] Fullscreen detection geometry
+PASS: 24 checks
